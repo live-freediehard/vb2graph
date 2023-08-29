@@ -1,0 +1,44 @@
+Private Sub mSetNewChrgSchmDefault()
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+Dim lsSchmCcy As String
+txtChrgLvl.Text = LC_LEVEL_VALUE
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_CD", cboChrgCd.Text, False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_LVL", LC_LEVEL_VALUE, False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_LVL_ID", Txn_Info.TranRefNbr, False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_LVL_SUB_ID", Txn_Info.TranSeqNbr, False)
+Dim sValue As String
+If GetPUConfigValue(ProcUnit, "BILL_CHRG_SCHM_DEF_TRAN_CCY", sValue) Then
+If sValue = "Y" Then
+cboMinAmtCcy.Text = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+cboChrgCcyCd.Text = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("MIN_CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("TIER_LMT_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+Else
+If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+If sValue = "Y" Then
+cboMinAmtCcy.Text = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("MIN_CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("TIER_LMT_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+Else
+cboMinAmtCcy.Text = LclCcy_Info.CcyCd
+cboChrgCcyCd.Text = LclCcy_Info.CcyCd
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_CCY_CD", LclCcy_Info.CcyCd, False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("MIN_CHRG_CCY_CD", LclCcy_Info.CcyCd, False)
+llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("TIER_LMT_CCY_CD", LclCcy_Info.CcyCd, False)
+endif
+endif
+endif
+endif
+llRet = StoreAttr(TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC), "EFF_FROM_DT", EMPTY_DT, False)
+llRet = StoreAttr(TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC), "EFF_TO_DT", MAX_DT, False)
+If GetPUConfigValue(ProcUnit, "IS_ANNUAL_BASIS_DEPEND_CCY", sValue) Then
+If sValue = "Y" Then
+Call mSetBaseYrDefault
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetNewChrgSchmDefault")
+End Sub

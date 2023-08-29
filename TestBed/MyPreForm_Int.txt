@@ -1,0 +1,8 @@
+Private Sub MyPreForm()
+On Error GoTo ERR_SYSTEM
+If DESIGNMODE Then Exit Sub
+GetDispData
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.MyPreForm")
+End Sub

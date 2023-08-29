@@ -1,0 +1,8 @@
+Private Sub optChrgSchmCal_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+fld_SetAttr0 Me, (optChrgSchmCal(Index).Tag), PreValue
+Call mSetValdyPrd_PrdBasis
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optChrgSchmCal_Click", Index, Value)
+End Sub

@@ -1,0 +1,19 @@
+digraph G{
+Node_1 [ label ="Private Sub mSetBillingSchmFilter(ByVal isReset As Boolean)\nOn Error GoTo ERR_SYSTEM\nDim lsBillTyp As String",shape="box"];
+Node_2 [ label ="isReset  ?",shape="diamond"];
+Node_3 [ label ="TransObj.Item(GT_RS_BILLING_SCHM).Filter False",shape="box"];
+Node_4 [ label ="endif",shape="box"];
+Node_5 [ label ="TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0  ?",shape="diamond"];
+Node_6 [ label ="lsBillTyp = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr('BILLING_TYP')",shape="box"];
+Node_7 [ label ="lsBillTyp = ''",shape="box"];
+Node_8 [ label ="endif\nTransObj.Item(GT_RS_BILLING_SCHM).SetFilterKeys ('BILLING_TYP')\nTransObj.Item(GT_RS_BILLING_SCHM).SetFilterValues lsBillTyp\nTransObj.Item(GT_RS_BILLING_SCHM).Filter True\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mSetBillingSchmFilter', isReset)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+Node_5 -> Node_6 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5;
+Node_5 -> Node_7 [label="False",fontcolor="RED"];
+Node_6 -> Node_8;
+Node_7 -> Node_8;
+}

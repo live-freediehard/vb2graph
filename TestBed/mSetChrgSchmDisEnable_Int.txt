@@ -1,0 +1,79 @@
+Private Sub mSetChrgSchmDisEnable()
+On Error GoTo ERR_SYSTEM
+Dim lsChrgLvl As String
+Dim lsFlatInd As String
+Dim lsChrgCd As String
+Dim llRowCnt As Long
+Dim sValue As String
+If ProdCat = "CIF" Then
+llRowCnt = TransObj.Item("BILL_CHRG_SCHM_CIF").RowCount
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+llRowCnt = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).RowCount
+endif
+If llRowCnt > 0 Then
+If ProdCat = "CIF" Then
+lsChrgLvl = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("CHRG_LVL")
+lsChrgCd = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("CHRG_CD")
+If (TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttrAtRow(0, "CHRG_LVL") = "T") Then
+lsFlatInd = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttrAtRow(0, "FLAT_IND")
+Else
+lsFlatInd = "N"
+endif
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+lsChrgLvl = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).GetAttr("CHRG_LVL")
+endif
+If lsChrgLvl = LC_LEVEL_VALUE And Not Is_Enq Then
+fld_EnableCtrl cboChrgAction
+fld_EnableCtrl cboChrgStartDay
+fld_EnableCtrl txtChrgRate
+fld_EnableCtrl cboChrgEndDay
+fld_EnableCtrl txtMinAmt
+fld_EnableCtrl optChrgSchmCal(0)
+fld_EnableCtrl optChrgSchmCal(1)
+fld_EnableCtrl optChrgSchmCal(2)
+If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+If sValue = "Y" Then
+fld_EnableCtrl cboChrgCcyCd
+fld_EnableCtrl cboMinAmtCcy
+endif
+endif
+ElseIf lsChrgLvl = CIF_LEVEL_VALUE And Not Is_Enq Then
+If ProdCat = "CIF" Then
+fld_EnableCtrl cboChrgAction
+fld_EnableCtrl cboChrgStartDay
+fld_EnableCtrl txtChrgRate
+fld_EnableCtrl cboChrgEndDay
+fld_EnableCtrl txtMinAmt
+fld_EnableCtrl optChrgSchmCal(0)
+fld_EnableCtrl optChrgSchmCal(1)
+fld_EnableCtrl optChrgSchmCal(2)
+If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+If sValue = "Y" Then
+fld_EnableCtrl cboChrgCcyCd
+fld_EnableCtrl cboMinAmtCcy
+endif
+endif
+If lsFlatInd = "Y" Then
+fld_DisableCtrl txtChrgRate
+endif
+If lsChrgCd = "ISSGPER" Then
+optChrgSchmCal(0).Enabled = False
+optChrgSchmCal(1).Enabled = False
+optChrgSchmCal(2).Enabled = False
+endif
+Else
+mDisableChrgSchmCtrl
+endif
+Else
+mDisableChrgSchmCtrl
+endif
+Else
+mDisableChrgSchmCtrl
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+mSetChrgDtlDisEnable
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetChrgSchmDisEnable")
+End Sub

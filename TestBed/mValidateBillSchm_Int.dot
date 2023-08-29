@@ -1,0 +1,17 @@
+digraph G{
+Node_1 [ label ="Private Sub mValidateBillSchm()\nOn Error GoTo ERR_SYSTEM\nDim lbret As Boolean\nDim lbEmpty As Boolean\nlbret = mSameBillSchmStDt(lbEmpty)",shape="box"];
+Node_2 [ label ="lbret  ? 'Scheme with same start date is detected",shape="diamond"];
+Node_3 [ label ="lbEmpty  ?",shape="diamond"];
+Node_4 [ label ="MsgBox 'More than One Scheme with default start date'",shape="box"];
+Node_5 [ label ="MsgBox 'More than One Scheme with the same start date'",shape="box"];
+Node_6 [ label ="endif\nCall gbSetFocusToControl(cboBillStartDay)",shape="box"];
+Node_7 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mValidateBillSchm')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_5 [label="False",fontcolor="RED"];
+Node_4 -> Node_6;
+Node_5 -> Node_6;
+Node_2 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+}

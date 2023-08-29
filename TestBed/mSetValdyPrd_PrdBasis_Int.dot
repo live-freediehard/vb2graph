@@ -1,0 +1,36 @@
+digraph G{
+Node_1 [ label ="Private Sub mSetValdyPrd_PrdBasis()\nOn Error GoTo ERR_SYSTEM\nDim loRecSet As Object\nDim llRet As Long",shape="box"];
+Node_2 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_3 [ label ="Set loRecSet = TransObj.Item('BILL_CHRG_SCHM_CIF')",shape="box"];
+Node_4 [ label =" Check ? :  ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then\nSet loRecSet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)",shape="box"];
+Node_5 [ label ="endif",shape="box"];
+Node_6 [ label ="Not loRecSet Is Nothing  ?",shape="diamond"];
+Node_7 [ label ="loRecSet.RowCount > 0  ?",shape="diamond"];
+Node_8 [ label ="(ProdCat = 'CIF' And loRecSet.GetAttr('CHRG_LVL') = CIF_LEVEL_VALUE) Or _",shape="diamond"];
+Node_9 [ label ="((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And loRecSet.GetAttr('CHRG_LVL') = LC_LEVEL_VALUE) Then",shape="box"];
+Node_10 [ label ="Select Case loRecSet.GetAttr('BASE_YR')",shape="diamond"];
+Node_11 [ label ="Case 'S'\nllRet = loRecSet.SetAttr('VALDY_PRD', '360', False)\nllRet = loRecSet.SetAttr('PRD_BASIS', 'D', False)\nCase '5'\nllRet = loRecSet.SetAttr('VALDY_PRD', '365', False)\nllRet = loRecSet.SetAttr('PRD_BASIS', 'D', False)\nCase '6'\nllRet = loRecSet.SetAttr('VALDY_PRD', '366', False)\nllRet = loRecSet.SetAttr('PRD_BASIS', 'D', False)",shape="box"];
+Node_12 [ label ="End Select",shape="box"];
+Node_13 [ label ="endif",shape="box"];
+Node_14 [ label ="endif",shape="box"];
+Node_15 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mSetValdyPrd_PrdBasis')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="False",fontcolor="RED"];
+Node_3 -> Node_5;
+Node_4 -> Node_5;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_7 -> Node_8 [label="True",fontcolor="GREEN"];
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_10 -> Node_11 [label="True",fontcolor="GREEN"];
+Node_9 -> Node_10;
+Node_10 -> Node_12 [label="False",fontcolor="RED"];
+Node_11 -> Node_12;
+Node_8 -> Node_13 [label="FALSE",fontcolor="RED"];
+Node_12 -> Node_13;
+Node_7 -> Node_14 [label="FALSE",fontcolor="RED"];
+Node_13 -> Node_14;
+Node_6 -> Node_15 [label="FALSE",fontcolor="RED"];
+Node_14 -> Node_15;
+}

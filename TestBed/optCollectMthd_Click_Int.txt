@@ -1,0 +1,14 @@
+Private Sub optCollectMthd_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+fld_SetAttr0 Me, (optCollectMthd(Index).Tag), PreValue
+If (ProdCat = "CIF" And txtBillingLvl.Text = CIF_LEVEL_VALUE) Or _
+((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And txtBillingLvl.Text = LC_LEVEL_VALUE) Then
+BillMethodCtrlSetup Index
+If Index = 1 And optPrdWhen(0).Value = False And optPrdWhen(1).Value = False Then
+optPrdWhen(0).Value = True
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectMthd_Click", Index, Value)
+End Sub

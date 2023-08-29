@@ -1,0 +1,32 @@
+Private Sub mSetValdyPrd_PrdBasis()
+On Error GoTo ERR_SYSTEM
+Dim loRecSet As Object
+Dim llRet As Long
+If ProdCat = "CIF" Then
+Set loRecSet = TransObj.Item("BILL_CHRG_SCHM_CIF")
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+Set loRecSet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+endif
+If Not loRecSet Is Nothing Then
+If loRecSet.RowCount > 0 Then
+If (ProdCat = "CIF" And loRecSet.GetAttr("CHRG_LVL") = CIF_LEVEL_VALUE) Or _
+((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And loRecSet.GetAttr("CHRG_LVL") = LC_LEVEL_VALUE) Then
+Select Case loRecSet.GetAttr("BASE_YR")
+Case "S"
+llRet = loRecSet.SetAttr("VALDY_PRD", "360", False)
+llRet = loRecSet.SetAttr("PRD_BASIS", "D", False)
+Case "5"
+llRet = loRecSet.SetAttr("VALDY_PRD", "365", False)
+llRet = loRecSet.SetAttr("PRD_BASIS", "D", False)
+Case "6"
+llRet = loRecSet.SetAttr("VALDY_PRD", "366", False)
+llRet = loRecSet.SetAttr("PRD_BASIS", "D", False)
+Case Else
+End Select
+endif
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetValdyPrd_PrdBasis")
+End Sub

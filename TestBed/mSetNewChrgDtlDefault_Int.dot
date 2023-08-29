@@ -1,0 +1,29 @@
+digraph G{
+Node_1 [ label ="Private Sub mSetNewChrgDtlDefault(ByVal pbNewRow As Boolean)\nOn Error GoTo ERR_SYSTEM\nDim lsChrgCdCcy As String\nDim retcode As Long\nDim sValue As String",shape="box"];
+Node_2 [ label ="GetPUConfigValue(ProcUnit, 'BILL_CHRG_SCHM_DEF_TRAN_CCY', sValue)  ?",shape="diamond"];
+Node_3 [ label ="sValue = 'Y'  ?",shape="diamond"];
+Node_4 [ label ="lsChrgCdCcy = TransObj.Item('LC_CCY').GetAttr('CCY_CD')",shape="box"];
+Node_5 [ label ="lsChrgCdCcy = LclCcy_Info.CcyCd",shape="box"];
+Node_6 [ label ="endif",shape="box"];
+Node_7 [ label ="endif",shape="box"];
+Node_8 [ label ="GetPUConfigValue(ProcUnit, 'IS_ALLOW_BILL_MULTI_CCY', sValue)  ?",shape="diamond"];
+Node_9 [ label ="sValue = 'Y'  ?",shape="diamond"];
+Node_10 [ label ="lsChrgCdCcy = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr('CCY_CD')",shape="box"];
+Node_11 [ label ="endif",shape="box"];
+Node_12 [ label ="endif\ntxtAmortCcy.Text = lsChrgCdCcy\ntxtAccrualCcy.Text = lsChrgCdCcy\ntxtLastBillCcy.Text = lsChrgCdCcy\nInitPrdcChrgDtl pbNewRow, False\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mSetNewChrgDtlDefault', pbNewRow)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_5 [label="False",fontcolor="RED"];
+Node_4 -> Node_6;
+Node_5 -> Node_6;
+Node_2 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_7 -> Node_8;
+Node_9 -> Node_10 [label="True",fontcolor="GREEN"];
+Node_9 -> Node_11 [label="FALSE",fontcolor="RED"];
+Node_10 -> Node_11;
+Node_8 -> Node_12 [label="FALSE",fontcolor="RED"];
+Node_11 -> Node_12;
+}

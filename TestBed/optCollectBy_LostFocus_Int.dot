@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub optCollectBy_LostFocus(Index As Integer)\nOn Error GoTo ERR_SYSTEM\nfld_LostFocus0 Me, (optCollectBy(Index).Tag), PreValue, Initial_Color\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.optCollectBy_LostFocus', Index)\nEnd Sub",shape="box"];
+}

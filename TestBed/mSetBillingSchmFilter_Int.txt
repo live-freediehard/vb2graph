@@ -1,0 +1,18 @@
+Private Sub mSetBillingSchmFilter(ByVal isReset As Boolean)
+On Error GoTo ERR_SYSTEM
+Dim lsBillTyp As String
+If isReset Then
+TransObj.Item(GT_RS_BILLING_SCHM).Filter False
+endif
+If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+lsBillTyp = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("BILLING_TYP")
+Else
+lsBillTyp = ""
+endif
+TransObj.Item(GT_RS_BILLING_SCHM).SetFilterKeys ("BILLING_TYP")
+TransObj.Item(GT_RS_BILLING_SCHM).SetFilterValues lsBillTyp
+TransObj.Item(GT_RS_BILLING_SCHM).Filter True
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetBillingSchmFilter", isReset)
+End Sub

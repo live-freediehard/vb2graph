@@ -1,0 +1,25 @@
+Private Sub mSetNewChrgDtlDefault(ByVal pbNewRow As Boolean)
+On Error GoTo ERR_SYSTEM
+Dim lsChrgCdCcy As String
+Dim retcode As Long
+Dim sValue As String
+If GetPUConfigValue(ProcUnit, "BILL_CHRG_SCHM_DEF_TRAN_CCY", sValue) Then
+If sValue = "Y" Then
+lsChrgCdCcy = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+Else
+lsChrgCdCcy = LclCcy_Info.CcyCd
+endif
+endif
+If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+If sValue = "Y" Then
+lsChrgCdCcy = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("CCY_CD")
+endif
+endif
+txtAmortCcy.Text = lsChrgCdCcy
+txtAccrualCcy.Text = lsChrgCdCcy
+txtLastBillCcy.Text = lsChrgCdCcy
+InitPrdcChrgDtl pbNewRow, False
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetNewChrgDtlDefault", pbNewRow)
+End Sub

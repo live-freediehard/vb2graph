@@ -1,0 +1,23 @@
+Private Sub mSetChrgDtlDisEnable()
+On Error GoTo ERR_SYSTEM
+Dim ldtCCTD As Date
+If optCollectBy.Item(1).Value = False And optCollectBy.Item(2).Value = False Then
+fld_DisableCtrl txtOther
+endif
+If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+ldtCCTD = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("COMM_COL_TILL_DT")
+If Is_Enq Then
+fld_DisableCtrl cboCommStartDt
+Else
+fld_EnableCtrl cboCommStartDt
+endif
+endif
+If (ProdCat = GT_PRD_NLC And TransObj.Item(GT_RS_LC_CTRY_EXT).GetAttr("PURP_CD") = "") Then
+fld_DisableCtrl cboCommStartDt
+fld_DisableCtrl cboNextBillDt
+fld_DisableCtrl txtOther
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetChrgDtlDisEnable")
+End Sub

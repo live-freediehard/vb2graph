@@ -1,0 +1,7 @@
+digraph G{
+Node_1 [ label ="Private Sub MyPreForm()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="DESIGNMODE  ? Exit Sub",shape="diamond"];
+Node_3 [ label ="GetDispData\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.MyPreForm')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+}

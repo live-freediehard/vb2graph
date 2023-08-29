@@ -1,0 +1,14 @@
+Private Sub mSetNewBillingSchmDefault()
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+txtBillingLvl.Text = LC_LEVEL_VALUE
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_TYP", txtBillingTyp.Text, False)
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_LVL", LC_LEVEL_VALUE, False)
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_LVL_ID", Txn_Info.TranRefNbr, False)
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_LVL_SUB_ID", Txn_Info.TranSeqNbr, False)
+llRet = StoreAttr(TransObj.Item(GT_RS_BILLING_SCHM), "EFF_FROM_DT", EMPTY_DT, False)
+llRet = StoreAttr(TransObj.Item(GT_RS_BILLING_SCHM), "EFF_TO_DT", MAX_DT, False)
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetNewBillingSchmDefault")
+End Sub

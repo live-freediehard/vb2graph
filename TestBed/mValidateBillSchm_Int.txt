@@ -1,0 +1,17 @@
+Private Sub mValidateBillSchm()
+On Error GoTo ERR_SYSTEM
+Dim lbret As Boolean
+Dim lbEmpty As Boolean
+lbret = mSameBillSchmStDt(lbEmpty)
+If lbret Then 'Scheme with same start date is detected
+If lbEmpty Then
+MsgBox "More than One Scheme with default start date"
+Else
+MsgBox "More than One Scheme with the same start date"
+endif
+Call gbSetFocusToControl(cboBillStartDay)
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mValidateBillSchm")
+End Sub

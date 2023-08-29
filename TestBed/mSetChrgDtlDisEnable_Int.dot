@@ -1,0 +1,33 @@
+digraph G{
+Node_1 [ label ="Private Sub mSetChrgDtlDisEnable()\nOn Error GoTo ERR_SYSTEM\nDim ldtCCTD As Date",shape="box"];
+Node_2 [ label ="optCollectBy.Item(1).Value = False And optCollectBy.Item(2).Value = False  ?",shape="diamond"];
+Node_3 [ label ="fld_DisableCtrl txtOther",shape="box"];
+Node_4 [ label ="endif",shape="box"];
+Node_5 [ label ="TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0  ?",shape="diamond"];
+Node_6 [ label ="ldtCCTD = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr('COMM_COL_TILL_DT')",shape="box"];
+Node_7 [ label ="Is_Enq  ?",shape="diamond"];
+Node_8 [ label ="fld_DisableCtrl cboCommStartDt",shape="box"];
+Node_9 [ label ="fld_EnableCtrl cboCommStartDt",shape="box"];
+Node_10 [ label ="endif",shape="box"];
+Node_11 [ label ="endif",shape="box"];
+Node_12 [ label ="(ProdCat = GT_PRD_NLC And TransObj.Item(GT_RS_LC_CTRY_EXT).GetAttr('PURP_CD') = '')  ?",shape="diamond"];
+Node_13 [ label ="fld_DisableCtrl cboCommStartDt\nfld_DisableCtrl cboNextBillDt\nfld_DisableCtrl txtOther",shape="box"];
+Node_14 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mSetChrgDtlDisEnable')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+Node_5 -> Node_6 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5;
+Node_7 -> Node_8 [label="True",fontcolor="GREEN"];
+Node_6 -> Node_7;
+Node_7 -> Node_9 [label="False",fontcolor="RED"];
+Node_8 -> Node_10;
+Node_9 -> Node_10;
+Node_5 -> Node_11 [label="FALSE",fontcolor="RED"];
+Node_10 -> Node_11;
+Node_12 -> Node_13 [label="True",fontcolor="GREEN"];
+Node_11 -> Node_12;
+Node_12 -> Node_14 [label="FALSE",fontcolor="RED"];
+Node_13 -> Node_14;
+}

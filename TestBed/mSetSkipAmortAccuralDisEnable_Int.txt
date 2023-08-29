@@ -1,0 +1,30 @@
+Private Sub mSetSkipAmortAccuralDisEnable()
+On Error GoTo ERR_SYSTEM
+If cboSkip.Text <> "N" Then
+If Not Is_Enq Then
+If TranType = GT_TTY_FIN_ADJ Then
+fld_EnableCtrl txtSkipReason
+fld_SetMandatory txtSkipReason, "", "", IS_MANDATORY_FIELD
+Else
+fld_SetMandatory txtSkipReason, "", "", NOT_MANDATORY_FIELD
+fld_DisableCtrl txtSkipReason
+endif
+Else
+fld_DisableCtrl txtSkipReason
+endif
+Else
+If Not Is_Enq Then
+If Not FormLoading Then
+txtSkipReason.Text = ""
+llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("SKIP_ACCR_AMORTN_REASON", "", False)
+endif
+fld_SetMandatory txtSkipReason, "", "", NOT_MANDATORY_FIELD
+fld_DisableCtrl txtSkipReason
+Else
+fld_DisableCtrl txtSkipReason
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetSkipAmortAccuralDisEnable")
+End Sub

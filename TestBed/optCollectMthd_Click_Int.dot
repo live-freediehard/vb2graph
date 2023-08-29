@@ -1,0 +1,17 @@
+digraph G{
+Node_1 [ label ="Private Sub optCollectMthd_Click(Index As Integer, Value As Integer)\nOn Error GoTo ERR_SYSTEM\nfld_SetAttr0 Me, (optCollectMthd(Index).Tag), PreValue",shape="box"];
+Node_2 [ label ="(ProdCat = 'CIF' And txtBillingLvl.Text = CIF_LEVEL_VALUE) Or _",shape="diamond"];
+Node_3 [ label ="((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And txtBillingLvl.Text = LC_LEVEL_VALUE) Then\nBillMethodCtrlSetup Index",shape="box"];
+Node_4 [ label ="Index = 1 And optPrdWhen(0).Value = False And optPrdWhen(1).Value = False  ?",shape="diamond"];
+Node_5 [ label ="optPrdWhen(0).Value = True",shape="box"];
+Node_6 [ label ="endif",shape="box"];
+Node_7 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.optCollectMthd_Click', Index, Value)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_4;
+Node_4 -> Node_6 [label="FALSE",fontcolor="RED"];
+Node_5 -> Node_6;
+Node_2 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+}

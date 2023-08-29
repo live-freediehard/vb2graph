@@ -1,0 +1,45 @@
+Private Sub optCollectBy_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+If ProdCat = "CIF" Then
+fld_SetAttr0 Me, (optCollectBy(Index).Tag), PreValue
+If Not FormLoading Then
+txtOther.Text = ""
+llRet = TransObj.Item("CUST_LCL_ADD").SetAttr("OTHER_DTL", "", False)
+endif
+Select Case Index
+Case 0
+fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+fld_DisableCtrl txtOther
+Case 1
+fld_SetMandatory txtOther, "", "", IS_MANDATORY_FIELD
+fld_EnableCtrl txtOther
+Case 2
+fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+fld_EnableCtrl txtOther
+End Select
+Else
+If (TranType = GT_TTY_ADVISING Or TranType = GT_TTY_AMENDMENT _
+Or TranType = GT_TTY_FIN_ADJ Or TranType = GT_TTY_ISSUANCE) Then
+fld_SetAttr0 Me, (optCollectBy(Index).Tag), PreValue
+If Not FormLoading Then
+txtOther.Text = ""
+llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("OTHER_DTL", "", False)
+endif
+Select Case Index
+Case 0
+fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+fld_DisableCtrl txtOther
+Case 1
+fld_SetMandatory txtOther, "", "", IS_MANDATORY_FIELD
+fld_EnableCtrl txtOther
+Case 2
+fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+fld_EnableCtrl txtOther
+End Select
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectBy_Click", Index, Value)
+End Sub

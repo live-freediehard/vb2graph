@@ -1,0 +1,7 @@
+Private Sub optCollectBy_LostFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+fld_LostFocus0 Me, (optCollectBy(Index).Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectBy_LostFocus", Index)
+End Sub

@@ -1,0 +1,18 @@
+Private Sub mSetChrgSchmFilter(ByVal isReset As Boolean)
+On Error GoTo ERR_SYSTEM
+Dim lsChrgCd As String
+If isReset Then
+TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).Filter False
+endif
+If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+lsChrgCd = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("CHRG_CD")
+Else
+lsChrgCd = ""
+endif
+TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetFilterKeys ("CHRG_CD")
+TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetFilterValues lsChrgCd
+TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).Filter True
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetChrgSchmFilter", isReset)
+End Sub

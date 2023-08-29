@@ -1,0 +1,7 @@
+Private Sub optCalendar_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+fld_SetAttr0 Me, (optCalendar(Index).Tag), PreValue
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCalendar_Click", Index, Value)
+End Sub

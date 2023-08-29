@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub optCalendar_Click(Index As Integer, Value As Integer)\nOn Error GoTo ERR_SYSTEM\nfld_SetAttr0 Me, (optCalendar(Index).Tag), PreValue\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.optCalendar_Click', Index, Value)\nEnd Sub",shape="box"];
+}

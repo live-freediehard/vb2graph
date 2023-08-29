@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub optChrgSchmCal_Click(Index As Integer, Value As Integer)\nOn Error GoTo ERR_SYSTEM\nfld_SetAttr0 Me, (optChrgSchmCal(Index).Tag), PreValue\nCall mSetValdyPrd_PrdBasis\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.optChrgSchmCal_Click', Index, Value)\nEnd Sub",shape="box"];
+}

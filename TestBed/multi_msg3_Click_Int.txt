@@ -1,0 +1,7 @@
+Private Sub multi_msg3_Click()
+On Error GoTo ERR_SYSTEM
+txt_multi3_Change
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.multi_msg3_Click")
+End Sub
