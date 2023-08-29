@@ -1,0 +1,11 @@
+Private Sub txtMinAmt_LostFocus()
+On Error GoTo ERR_SYSTEM
+Dim sValue As String
+fld_LostFocus0 Me, (txtMinAmt.Tag), PreValue, Initial_Color
+If txtMinAmt.Text = "" Then
+txtMinAmt.Text = 0
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtMinAmt_LostFocus")
+End Sub

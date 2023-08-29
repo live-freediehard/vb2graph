@@ -1,0 +1,3646 @@
+Dim Initial_Color As Long
+Dim PreValue As Variant
+Private mbInitializeFormHasBeenCalled As Boolean
+Private mobjChrgCdComboSQL As New CComboBySQL
+
+Dim mcsrvBillEndDay As CComboByCalendar
+Dim mcsrvBillStartDay As CComboByCalendar
+Dim mcsrvChrgStartDay As CComboByCalendar
+Dim mcsrvChrgEndDay As CComboByCalendar
+Dim mcsrvCommStartDt As CComboByCalendar
+Dim mcsrvNextBillDt As CComboByCalendar
+Dim mcsrvLastBillDt As CComboByCalendar
+Dim mcsrvChrgAction As CComboByArray
+'---[EMEA]---[20061004]
+Dim mcsrvSkipAmortAccural As CComboByArray
+'---[EMEA]---[END]
+'---[EMEA]---[20060216]
+Dim mcsrvChrgCcyCd As CComboByLookup
+Dim mcsrvMinChrgCcyCd As CComboByLookup
+'---[EMEA]---[END]
+Dim msCommColByInd As String
+Dim msOtherDtl As String
+
+Dim bill_currentrow As Long
+Dim bill_rowcount As Long
+Const LC_LEVEL_VALUE = "L"
+Const CIF_LEVEL_VALUE = "C"
+
+
+Const PRD_CHRG_SYS_GEN = "S"
+Const PRD_CHRG_USR_ADD = "B"    'Use 'B' to standardize with that in TP_CHRG
+
+Private Sub mForceGetBillChrgSchm()
+On Error GoTo ERR_SYSTEM
+    
+Dim rsBillSchm As OGTRecordSet
+Dim rsChrgSchm As OGTRecordSet
+Dim rsCustLcl As OGTRecordSet
+
+'CIF
+Dim rsBillTyp As OGTRecordSet
+Dim rsChrgCd As OGTRecordSet
+    
+    If ProdCat = "CIF" Then
+        Set rsBillSchm = TransObj.Item("BILLING_SCHM_CIF")
+        Set rsBillTyp = TransObj.Item("BILLING_TYP_CIF")
+        Set rsChrgSchm = TransObj.Item("BILL_CHRG_SCHM_CIF")
+        Set rsChrgCd = TransObj.Item("BILL_CHRG_CD_CIF")
+        Set rsCustLcl = TransObj.Item("CUST_LCL")
+        
+        If Not rsBillSchm Is Nothing And Not rsCustLcl Is Nothing Then
+            If rsBillSchm.RowCount = 0 Then
+                rsBillSchm.AddRow 0
+            End If
+            rsBillSchm.SetAttr "PROC_UNIT", ProcUnit, True
+            rsBillSchm.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+            rsBillSchm.GetData 1
+            rsBillSchm.MoveFirst
+        End If
+        
+        If Not rsBillTyp Is Nothing And Not rsCustLcl Is Nothing Then
+            If rsBillTyp.RowCount = 0 Then
+                rsBillTyp.AddRow 0
+            End If
+            rsBillTyp.SetAttr "PROC_UNIT", ProcUnit, True
+            rsBillTyp.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+            rsBillTyp.GetData 1
+            rsBillTyp.MoveFirst
+        End If
+        
+        If Not rsChrgSchm Is Nothing And Not rsCustLcl Is Nothing Then
+            If rsChrgSchm.RowCount = 0 Then
+                rsChrgSchm.AddRow 0
+            End If
+            rsChrgSchm.SetAttr "PROC_UNIT", ProcUnit, True
+            rsChrgSchm.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+            rsChrgSchm.GetData 1
+            rsChrgSchm.MoveFirst
+        End If
+        
+        If Not rsChrgCd Is Nothing And Not rsCustLcl Is Nothing Then
+            If rsChrgCd.RowCount = 0 Then
+                rsChrgCd.AddRow 0
+            End If
+            rsChrgCd.SetAttr "PROC_UNIT", ProcUnit, True
+            rsChrgCd.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+            rsChrgCd.GetData 1
+            rsChrgCd.MoveFirst
+        End If
+    End If
+    
+    If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        'update the paying bank recset
+        Set rsBillSchm = TransObj.Item(GT_RS_BILLING_SCHM)
+        If Not rsBillSchm Is Nothing Then
+            If rsBillSchm.RowCount = 0 Then
+                rsBillSchm.AddRow 0
+            End If
+            rsBillSchm.SetAttr "PROC_UNIT", ProcUnit, True
+            rsBillSchm.SetAttr "TRAN_REF_NBR", Txn_Info.TranRefNbr, True
+            rsBillSchm.SetAttr "TRAN_SEQ_NBR", Txn_Info.TranSeqNbr, True
+            rsBillSchm.GetData 1
+            rsBillSchm.MoveFirst
+        End If
+        
+        Set rsChrgSchm = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+        If Not rsChrgSchm Is Nothing Then
+            If rsChrgSchm.RowCount = 0 Then
+                rsChrgSchm.AddRow 0
+            End If
+            rsChrgSchm.SetAttr "PROC_UNIT", ProcUnit, True
+            rsChrgSchm.SetAttr "TRAN_REF_NBR", Txn_Info.TranRefNbr, True
+            rsChrgSchm.SetAttr "TRAN_SEQ_NBR", Txn_Info.TranSeqNbr, True
+            rsChrgSchm.GetData 1
+            rsChrgSchm.MoveFirst
+        End If
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mForceGetBillChrgSchm")
+End Sub
+
+
+Private Sub mInitializeChrgCdCombo()
+On Error GoTo ERR_SYSTEM
+
+    Set mobjChrgCdComboSQL = Nothing
+    With mobjChrgCdComboSQL
+        Set .ComboObject = cboChrgCd
+        .ComboID = glCOMBO_ID_GENERIC_BY_SQL
+        
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            .SQL = "select distinct t1.CHRG_CD, t1.CHRG_DESC, t2.BILLING_TYP, t2.BILLING_DESC " _
+                & " from GTDMAST1..CHRG_CD t1, GTDMAST1..BILLING_TYP t2, GTDMAST1..CHRG_CD_BILL_TYP_LNK t3, GTDMAST1..CHRG_CD_PROD_LNK t4 " _
+                & " where t1.STATUS = 'A' and t2.STATUS = 'A' and t3.STATUS = 'A'" _
+                & " and t1.PROC_UNIT = '" & Fix_Quot_Mark(ProcUnit, "'") & "'" _
+                & " and t1.PROC_UNIT = t2.PROC_UNIT and t2.PROC_UNIT = t3.PROC_UNIT" _
+                & " and t1.PRDC_IND = 'Y' " _
+                & " and t1.CHRG_CD = t3.CHRG_CD and t2.BILLING_TYP = t3.BILLING_TYP" _
+                & " and t4.CHRG_CD = t3.CHRG_CD and t4.PROD_LVL_ID = '" & ProdCat & "'" _
+                & " and t4.PROC_UNIT = t1.PROC_UNIT and t4.PROD_LVL = 'C' and t4.STATUS = 'A'" _
+                & " order by t1.CHRG_CD"
+        ElseIf ProdCat = "CIF" Then
+            .SQL = "select distinct t1.CHRG_CD, t1.CHRG_DESC, t2.BILLING_TYP, t2.BILLING_DESC " _
+               & " from GTDMAST1..CHRG_CD t1, GTDMAST1..BILLING_TYP t2, GTDMAST1..CHRG_CD_BILL_TYP_LNK t3 " _
+               & " where t1.STATUS = 'A' and t2.STATUS = 'A' and t3.STATUS = 'A'" _
+               & " and t1.PROC_UNIT = '" & Fix_Quot_Mark(ProcUnit, "'") & "'" _
+               & " and t1.PROC_UNIT = t2.PROC_UNIT and t2.PROC_UNIT = t3.PROC_UNIT" _
+               & " and t1.PRDC_IND = 'Y' " _
+               & " and t1.CHRG_CD = t3.CHRG_CD and t2.BILLING_TYP = t3.BILLING_TYP" _
+               & " order by t1.CHRG_CD"
+        End If
+            
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            .AddLinkedTextBox lblChrgCd, "CHRG_DESC"
+            .AddLinkedTextBox txtChrgBillingTyp, "BILLING_TYP"
+            .AddLinkedTextBox lblChrgBillingDesc, "BILLING_DESC"
+            .AddLinkedTextBox txtBillingTyp, "BILLING_TYP"
+            .AddLinkedTextBox lblBillingDesc, "BILLING_DESC"
+        End If
+        .Initialize
+        
+        .Columns("CHRG_CD").Caption = "Code"
+        .Columns("CHRG_DESC").Caption = "Charge Code Description"
+        .Columns("CHRG_DESC").Width = 4000
+        .Columns("BILLING_TYP").Caption = "Billing Type"
+        .Columns("BILLING_TYP").Width = 1000
+        .Columns("BILLING_DESC").Width = 0
+        .Populate
+        If .Validate(cboChrgCd.Text) Then
+            Call .UpdateLinkedControls
+        End If
+    End With
+    fld_SetMandatory cboChrgCd, "", "", IS_MANDATORY_FIELD
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mInitializeChrgCdCombo")
+End Sub
+
+Private Sub cboBillEndDay_CloseUp()
+On Error GoTo ERR_SYSTEM
+    mcsrvBillEndDay.ShowCalendar
+    gHandle_Got_Focus cboBillEndDay
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_CloseUp")
+End Sub
+
+Private Sub cboBillEndDay_DropDown()
+On Error GoTo ERR_SYSTEM
+    PreValue = cboBillEndDay.Text
+    SendKeys "{enter}"
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_DropDown")
+End Sub
+
+Private Sub cboBillEndDay_GotFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvBillEndDay.ShowCalendarInProgress = False Then
+        fld_GotFocus0 Me, (cboBillEndDay.Tag), PreValue, Initial_Color
+    Else
+        mcsrvBillEndDay.CompleteShowCalendar
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_GotFocus")
+End Sub
+
+Private Sub cboBillEndDay_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If KeyCode = Look_Up_Key Then
+        cboBillEndDay_DropDown
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_KeyDown", KeyCode, Shift)
+End Sub
+
+Private Sub cboBillEndDay_LostFocus()
+On Error GoTo ERR_SYSTEM
+    Dim llRet As Long
+    If mcsrvBillEndDay.ShowCalendarInProgress = False Then
+        fld_LostFocus0 Me, (cboBillEndDay.Tag), PreValue, Initial_Color
+        If cboBillEndDay.Text = "" Then
+            If ProdCat = "CIF" Then
+                'llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("EFF_TO_DT", MAX_DT, False)
+                llRet = StoreAttr(TransObj.Item("BILLING_SCHM_CIF"), "EFF_TO_DT", MAX_DT, False)
+            ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+                'llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("EFF_TO_DT", MAX_DT, False)
+                llRet = StoreAttr(TransObj.Item(GT_RS_BILLING_SCHM), "EFF_TO_DT", MAX_DT, False)
+            End If
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_LostFocus")
+End Sub
+
+Private Sub cboBillEndDay_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+    Dim StartDys As Date
+    Dim EndDys As Date
+    Dim ErrCode As Long
+
+    If ProdCat = "CIF" Then
+        StartDys = TransObj.Item("BILLING_SCHM_CIF").GetAttr("EFF_FROM_DT")
+        EndDys = TransObj.Item("BILLING_SCHM_CIF").GetAttr("EFF_TO_DT")
+        
+        If cboBillStartDay.Text <> "" And cboBillEndDay.Text <> "" Then
+            If DateDiff("d", StartDys, EndDys) < 0 Then
+                ErrCode = 80032
+                RtnPassed = mcsrvBillEndDay.Validate(Text, StartDys, EndDys, True, ErrCode)
+            End If
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_ValidateList", Text, RtnPassed)
+End Sub
+
+Private Sub cboBillStartDay_CloseUp()
+On Error GoTo ERR_SYSTEM
+    mcsrvBillStartDay.ShowCalendar
+    gHandle_Got_Focus cboBillStartDay
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_CloseUp")
+End Sub
+
+Private Sub cboBillStartDay_DropDown()
+On Error GoTo ERR_SYSTEM
+    PreValue = cboBillStartDay.Text
+    SendKeys "{enter}"
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_DropDown")
+End Sub
+
+Private Sub cboBillStartDay_GotFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvBillStartDay.ShowCalendarInProgress = False Then
+        fld_GotFocus0 Me, (cboBillStartDay.Tag), PreValue, Initial_Color
+    Else
+        mcsrvBillStartDay.CompleteShowCalendar
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_GotFocus")
+End Sub
+
+Private Sub cboBillStartDay_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If KeyCode = Look_Up_Key Then
+        cboBillStartDay_DropDown
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_KeyDown", KeyCode, Shift)
+End Sub
+
+Private Sub cboBillStartDay_LostFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvBillStartDay.ShowCalendarInProgress = False Then
+        fld_LostFocus0 Me, (cboBillStartDay.Tag), PreValue, Initial_Color
+        
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            mValidateBillSchm
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_LostFocus")
+End Sub
+
+Private Sub cboBillStartDay_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+    Dim StartDys As Date
+    Dim EndDys As Date
+    Dim CurrentDt As Date
+    Dim ErrCode As Long
+    Dim current As Long
+    Dim i As Integer
+            
+    'Checking in CIF setup screen
+    If ProdCat = "CIF" Then
+        StartDys = TransObj.Item("BILLING_SCHM_CIF").GetAttr("EFF_FROM_DT")
+        EndDys = TransObj.Item("BILLING_SCHM_CIF").GetAttr("EFF_TO_DT")
+        
+        
+        If cboBillStartDay.Text <> "" Then
+            'check dupulicate key
+            current = TransObj.Item("BILLING_SCHM_CIF").CurrentRow
+            CurrentDt = cboBillStartDay.Text
+                
+            For i = 0 To TransObj.Item("BILLING_SCHM_CIF").RowCount - 1
+                TransObj.Item("BILLING_SCHM_CIF").CurrentRow = i
+                If DateDiff("d", CurrentDt, TransObj.Item("BILLING_SCHM_CIF").GetAttr("EFF_FROM_DT")) = 0 And i <> current Then
+                    ErrCode = 20007
+                    RtnPassed = 0
+                    GlobalErrorMessage = 20007
+                End If
+            Next
+        End If
+        
+        If cboBillStartDay.Text <> "" And cboBillEndDay.Text <> "" And ErrCode <> 20007 Then
+            If DateDiff("d", StartDys, EndDys) < 0 Then
+                ErrCode = 80032
+                RtnPassed = mcsrvBillStartDay.Validate(Text, StartDys, EndDys, True, ErrCode)
+            End If
+        End If
+    ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        'Call mValidateBillSchm 'Checking in LC online screen
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_ValidateList", Text, RtnPassed)
+End Sub
+
+Private Sub cboChrgAction_CloseUp()
+On Error GoTo ERR_SYSTEM
+    With mcsrvChrgAction
+        .Validate
+        .UpdateLinkedControls giCLEAR_IF_INVALID
+    End With
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgAction_CloseUp")
+End Sub
+
+Private Sub cboChrgAction_DropDown()
+On Error GoTo ERR_SYSTEM
+    With mcsrvChrgAction
+        If .Initialized = False Then
+            .Initialize
+            .Columns("PRODUCT_LVL").Caption = "Charge Action"
+            .Columns("PRODUCT_LVL").Width = 1200
+            .Columns("PRODUCT_LVL_DESC").Caption = "Description"
+            .Columns("PRODUCT_LVL_DESC").Width = 1200
+            .Populate
+        End If
+    End With
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgAction_DropDown")
+End Sub
+
+Private Sub cboChrgAction_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (cboChrgAction.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgAction_GotFocus")
+End Sub
+
+Private Sub cboChrgAction_LostFocus()
+On Error GoTo ERR_SYSTEM
+
+    'Change the charge action code from full name to short name in order to save
+    Call SetChrgActCd(1)
+
+    fld_LostFocus0 Me, (cboChrgAction.Tag), PreValue, Initial_Color
+    
+    'Change the charge action code from short name to full name for display
+    Call SetChrgActCd(0)
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgAction_LostFocus")
+End Sub
+
+Private Sub cboChrgAction_UnboundReadData(ByVal RowBuf As SSDataWidgets_B.ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+    If Not mcsrvChrgAction Is Nothing Then
+           mcsrvChrgAction.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgAction_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub
+
+Private Sub mSetNewChrgDtlDefault(ByVal pbNewRow As Boolean)
+On Error GoTo ERR_SYSTEM
+Dim lsChrgCdCcy As String
+Dim retcode As Long
+    'Call from [ + ] button in the datapanel (pbGenSeq = True)
+    ' OR
+    'Call from cboChrgCd lost focus (pbGenSeq = False).
+    ' Need to call this function for the case when LC purpose code is not selected, and a manual charge code is added.
+    
+    '----[Eddie Man]----[29AUG2005]
+    'GTS 3.0 Asia Requirement
+    Dim sValue As String
+    If GetPUConfigValue(ProcUnit, "BILL_CHRG_SCHM_DEF_TRAN_CCY", sValue) Then
+        If sValue = "Y" Then
+            lsChrgCdCcy = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+        Else
+        '----[Eddie Man]----[29AUG2005]
+            lsChrgCdCcy = LclCcy_Info.CcyCd
+        '----[Eddie Man]----[29AUG2005]
+        End If
+    End If
+    '----[Eddie Man]----[29AUG2005]
+    
+    '---[EMEA]---[20060313]
+    If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+        If sValue = "Y" Then
+            lsChrgCdCcy = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("CCY_CD")
+        End If
+    End If
+    '---[EMEA]---[END]
+    
+    txtAmortCcy.Text = lsChrgCdCcy
+    txtAccrualCcy.Text = lsChrgCdCcy
+    txtLastBillCcy.Text = lsChrgCdCcy
+    
+    InitPrdcChrgDtl pbNewRow, False
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetNewChrgDtlDefault", pbNewRow)
+End Sub
+
+Private Sub mSetNewChrgSchmDefault()
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+Dim lsSchmCcy As String
+
+    'Call from [ + ] button in the datapanel
+    txtChrgLvl.Text = LC_LEVEL_VALUE
+    ' Initialize the Chrg Level
+    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_CD", cboChrgCd.Text, False)
+    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_LVL", LC_LEVEL_VALUE, False)
+    ' Initialize the Billing level ID and Billing level sub ID
+    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_LVL_ID", Txn_Info.TranRefNbr, False)
+    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_LVL_SUB_ID", Txn_Info.TranSeqNbr, False)
+    
+    '----[Eddie Man]----[29AUG2005]
+    'GTS 3.0 Asia Requirement
+    Dim sValue As String
+    If GetPUConfigValue(ProcUnit, "BILL_CHRG_SCHM_DEF_TRAN_CCY", sValue) Then
+        If sValue = "Y" Then
+            cboMinAmtCcy.Text = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+            cboChrgCcyCd.Text = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+            llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+            llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("MIN_CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+            llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("TIER_LMT_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+        '---[EMEA]---[20060313]
+        '---[EMEA] Requirement
+        Else
+            If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+                If sValue = "Y" Then
+                    cboMinAmtCcy.Text = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+                    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("MIN_CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+                    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("TIER_LMT_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+                Else
+                    '----[Eddie Man]----[29AUG2005]
+                    cboMinAmtCcy.Text = LclCcy_Info.CcyCd
+                    cboChrgCcyCd.Text = LclCcy_Info.CcyCd
+                    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("CHRG_CCY_CD", LclCcy_Info.CcyCd, False)
+                    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("MIN_CHRG_CCY_CD", LclCcy_Info.CcyCd, False)
+                    llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("TIER_LMT_CCY_CD", LclCcy_Info.CcyCd, False)
+                    '----[Eddie Man]----[29AUG2005]
+                End If
+            End If
+        End If
+        '---[EMEA]---[END]
+    End If
+    '----[Eddie Man]----[29AUG2005]
+    
+    'initialize the effective from date to MIN_DT
+    'llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("EFF_FROM_DT", EMPTY_DT, False)
+    llRet = StoreAttr(TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC), "EFF_FROM_DT", EMPTY_DT, False)
+    
+    'initialize the effective to date to MAX_DT
+    'llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("EFF_TO_DT", MAX_DT, False)
+    llRet = StoreAttr(TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC), "EFF_TO_DT", MAX_DT, False)
+    
+    '---[EMEA]---[20060213]
+    If GetPUConfigValue(ProcUnit, "IS_ANNUAL_BASIS_DEPEND_CCY", sValue) Then
+        If sValue = "Y" Then
+            Call mSetBaseYrDefault
+        End If
+    End If
+    '---[EMEA]---[END]
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetNewChrgSchmDefault")
+End Sub
+
+Private Sub mSetNewBillingSchmDefault()
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+
+    'Call from [ + ] button in the datapanel
+    txtBillingLvl.Text = LC_LEVEL_VALUE
+    ' Initialize the Billing Type and Billing Level
+    llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_TYP", txtBillingTyp.Text, False)
+    llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_LVL", LC_LEVEL_VALUE, False)
+    ' Initialize the Billing level ID and Billing level sub ID
+    llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_LVL_ID", Txn_Info.TranRefNbr, False)
+    llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("BILLING_LVL_SUB_ID", Txn_Info.TranSeqNbr, False)
+
+    'initialize the effective from date to MIN_DT
+    'llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("EFF_FROM_DT", EMPTY_DT, False)
+    llRet = StoreAttr(TransObj.Item(GT_RS_BILLING_SCHM), "EFF_FROM_DT", EMPTY_DT, False)
+    
+    'initialize the effective to date to MAX_DT
+    'llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("EFF_TO_DT", MAX_DT, False)
+    llRet = StoreAttr(TransObj.Item(GT_RS_BILLING_SCHM), "EFF_TO_DT", MAX_DT, False)
+
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetNewBillingSchmDefault")
+End Sub
+
+Private Sub mDisableBillSchmCtrl()
+On Error GoTo ERR_SYSTEM
+    fld_DisableCtrl cboBillStartDay
+    fld_DisableCtrl cboBillEndDay
+    fld_DisableCtrl optCollectMthd(0)
+    fld_DisableCtrl optCollectMthd(1)
+    fld_DisableCtrl optCalendar(0)
+    fld_DisableCtrl optCalendar(1)
+    fld_DisableCtrl optCalendar(2)
+    fld_DisableCtrl optCalendar(3)
+    fld_DisableCtrl txtPrdNoMonth
+    fld_DisableCtrl optPrdWhen(0)
+    fld_DisableCtrl optPrdWhen(1)
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mDisableBillSchmCtrl")
+End Sub
+
+Private Sub mSetBillingSchmDisEnable()
+On Error GoTo ERR_SYSTEM
+Dim lsBillLvl As String
+Dim llRowCnt As Long
+
+    ' To set the disable/enable properties regarding the billing level of the current row
+    If ProdCat = "CIF" Then
+        llRowCnt = TransObj.Item("BILLING_SCHM_CIF").RowCount
+    ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        llRowCnt = TransObj.Item(GT_RS_BILLING_SCHM).RowCount
+    End If
+        
+    If llRowCnt > 0 Then
+        If ProdCat = "CIF" Then
+            lsBillLvl = TransObj.Item("BILLING_SCHM_CIF").GetAttr("BILLING_LVL")
+        ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            lsBillLvl = TransObj.Item(GT_RS_BILLING_SCHM).GetAttr("BILLING_LVL")
+        End If
+        
+        ' To set the disable/enable properties regarding the billing level of the current row
+        If lsBillLvl = LC_LEVEL_VALUE And Not Is_Enq Then
+            fld_EnableCtrl cboBillStartDay
+            fld_EnableCtrl cboBillEndDay
+            fld_EnableCtrl optCollectMthd(0)
+            fld_EnableCtrl optCollectMthd(1)
+            
+            If optCollectMthd(0).Value = True Then
+                BillMethodCtrlSetup 0
+            ElseIf optCollectMthd(1).Value = True Then
+                BillMethodCtrlSetup 1
+            Else ' none of them are selected, probably newly added entries
+                BillMethodCtrlSetup -1
+            End If
+        ElseIf lsBillLvl = CIF_LEVEL_VALUE And Not Is_Enq Then
+            If ProdCat = "CIF" Then
+                fld_EnableCtrl cboBillStartDay
+                fld_EnableCtrl cboBillEndDay
+                fld_EnableCtrl optCollectMthd(0)
+                fld_EnableCtrl optCollectMthd(1)
+                
+                If optCollectMthd(0).Value = True Then
+                    BillMethodCtrlSetup 0
+                ElseIf optCollectMthd(1).Value = True Then
+                    BillMethodCtrlSetup 1
+                Else ' none of them are selected, probably newly added entries
+                    BillMethodCtrlSetup -1
+                End If
+            Else
+                mDisableBillSchmCtrl
+            End If
+        Else
+            mDisableBillSchmCtrl
+        End If
+    Else
+        mDisableBillSchmCtrl
+    End If
+    
+    If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        mSetChrgDtlDisEnable
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetBillingSchmDisEnable")
+End Sub
+
+Private Sub mDisableChrgSchmCtrl()
+On Error GoTo ERR_SYSTEM
+    fld_DisableCtrl cboChrgAction
+    fld_DisableCtrl cboChrgStartDay
+    fld_DisableCtrl txtChrgRate
+    fld_DisableCtrl cboChrgEndDay
+    fld_DisableCtrl txtMinAmt
+    fld_DisableCtrl optChrgSchmCal(0)
+    fld_DisableCtrl optChrgSchmCal(1)
+    fld_DisableCtrl optChrgSchmCal(2)
+    '---[EMEA]---[20060216]
+    fld_DisableCtrl cboChrgCcyCd
+    fld_DisableCtrl cboMinAmtCcy
+    '---[EMEA]---[END]
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mDisableChrgSchmCtrl")
+End Sub
+
+Private Sub mSetChrgSchmDisEnable()
+On Error GoTo ERR_SYSTEM
+
+Dim lsChrgLvl As String
+Dim lsFlatInd As String
+Dim lsChrgCd As String
+Dim llRowCnt As Long
+Dim sValue As String
+
+    If ProdCat = "CIF" Then
+        llRowCnt = TransObj.Item("BILL_CHRG_SCHM_CIF").RowCount
+    ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        llRowCnt = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).RowCount
+    End If
+    
+    If llRowCnt > 0 Then
+        
+        If ProdCat = "CIF" Then
+            lsChrgLvl = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("CHRG_LVL")
+            lsChrgCd = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("CHRG_CD")
+            
+            'getting the charge code's trade level flat indicator
+            If (TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttrAtRow(0, "CHRG_LVL") = "T") Then
+                lsFlatInd = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttrAtRow(0, "FLAT_IND")
+            Else
+                lsFlatInd = "N"
+            End If
+        ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            lsChrgLvl = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).GetAttr("CHRG_LVL")
+        End If
+        
+        ' To set the disable/enable properties regarding the billing level of the current row
+        If lsChrgLvl = LC_LEVEL_VALUE And Not Is_Enq Then
+            fld_EnableCtrl cboChrgAction
+            fld_EnableCtrl cboChrgStartDay
+            fld_EnableCtrl txtChrgRate
+            fld_EnableCtrl cboChrgEndDay
+            fld_EnableCtrl txtMinAmt
+            fld_EnableCtrl optChrgSchmCal(0)
+            fld_EnableCtrl optChrgSchmCal(1)
+            fld_EnableCtrl optChrgSchmCal(2)
+            
+            '---[EMEA]---[20060216]
+            If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+                If sValue = "Y" Then
+                    fld_EnableCtrl cboChrgCcyCd
+                    fld_EnableCtrl cboMinAmtCcy
+                End If
+            End If
+            '---[EMEA]---[END]
+        ElseIf lsChrgLvl = CIF_LEVEL_VALUE And Not Is_Enq Then
+            If ProdCat = "CIF" Then
+                fld_EnableCtrl cboChrgAction
+                fld_EnableCtrl cboChrgStartDay
+                fld_EnableCtrl txtChrgRate
+                fld_EnableCtrl cboChrgEndDay
+                fld_EnableCtrl txtMinAmt
+                fld_EnableCtrl optChrgSchmCal(0)
+                fld_EnableCtrl optChrgSchmCal(1)
+                fld_EnableCtrl optChrgSchmCal(2)
+                
+                '---[EMEA]---[20060216]
+                If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+                    If sValue = "Y" Then
+                        fld_EnableCtrl cboChrgCcyCd
+                        fld_EnableCtrl cboMinAmtCcy
+                    End If
+                End If
+                '---[EMEA]---[END]
+                
+                If lsFlatInd = "Y" Then
+                    fld_DisableCtrl txtChrgRate
+                End If
+                
+                'Grey out the Annual basis if the charge code is Steamship
+                If lsChrgCd = "ISSGPER" Then
+                    optChrgSchmCal(0).Enabled = False
+                    optChrgSchmCal(1).Enabled = False
+                    optChrgSchmCal(2).Enabled = False
+                End If
+                
+            Else
+                mDisableChrgSchmCtrl
+            End If
+        Else
+            mDisableChrgSchmCtrl
+        End If
+    Else
+        mDisableChrgSchmCtrl
+    End If
+    
+    If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        mSetChrgDtlDisEnable
+    End If
+
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetChrgSchmDisEnable")
+End Sub
+
+Private Sub mSetChrgDtlDisEnable()
+On Error GoTo ERR_SYSTEM
+Dim ldtCCTD As Date
+    
+    'Always need to refresh the disable colour of the txtOther, as it is needed after calling GetDispData
+    'disable txtother if comm_col_by_ind is not = "Other" and not = "Manual"
+    If optCollectBy.Item(1).Value = False And optCollectBy.Item(2).Value = False Then
+        fld_DisableCtrl txtOther
+    End If
+    
+    '  If the 1st commission is already received, disable the Commisssion Start Date list box
+    '  If the LC is reopen, should be activated.
+    If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+        ldtCCTD = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("COMM_COL_TILL_DT")
+        If Is_Enq Then
+            fld_DisableCtrl cboCommStartDt
+'CSD are always opened, the only criteria is it should not earlier than CSTD
+'        ElseIf DateDiff("d", ldtCCTD, EMPTY_DT) <> 0 And Not CheckLCReopen Then
+'            fld_DisableCtrl cboCommStartDt
+        Else
+            fld_EnableCtrl cboCommStartDt
+        End If
+    End If
+    
+    If (ProdCat = GT_PRD_NLC And TransObj.Item(GT_RS_LC_CTRY_EXT).GetAttr("PURP_CD") = "") Then
+        fld_DisableCtrl cboCommStartDt
+        fld_DisableCtrl cboNextBillDt
+        fld_DisableCtrl txtOther
+    End If
+        
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetChrgDtlDisEnable")
+End Sub
+Private Sub mSetBillingSchmFilter(ByVal isReset As Boolean)
+On Error GoTo ERR_SYSTEM
+Dim lsBillTyp As String
+
+    If isReset Then
+        TransObj.Item(GT_RS_BILLING_SCHM).Filter False
+    End If
+    
+    If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+        lsBillTyp = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("BILLING_TYP")
+    Else
+        lsBillTyp = ""
+    End If
+    TransObj.Item(GT_RS_BILLING_SCHM).SetFilterKeys ("BILLING_TYP")
+    TransObj.Item(GT_RS_BILLING_SCHM).SetFilterValues lsBillTyp
+    TransObj.Item(GT_RS_BILLING_SCHM).Filter True
+           
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetBillingSchmFilter", isReset)
+End Sub
+
+Private Sub mSetChrgSchmFilter(ByVal isReset As Boolean)
+On Error GoTo ERR_SYSTEM
+    Dim lsChrgCd As String
+    If isReset Then
+        TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).Filter False
+    End If
+    If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+        lsChrgCd = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("CHRG_CD")
+    Else
+        lsChrgCd = ""
+    End If
+    TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetFilterKeys ("CHRG_CD")
+    TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetFilterValues lsChrgCd
+    TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).Filter True
+        
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetChrgSchmFilter", isReset)
+End Sub
+
+Private Sub cboChrgCd_CloseUp()
+On Error GoTo ERR_SYSTEM
+
+    If mobjChrgCdComboSQL.Validate Then
+        mobjChrgCdComboSQL.UpdateLinkedControls
+        Call cboChrgCd_LostFocus
+        Call gbSetFocusToControl(cboCommStartDt)
+        Call HiddenDefaultDate           'hidden default value
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_CloseUp")
+End Sub
+
+Private Sub cboChrgCd_DropDown()
+On Error GoTo ERR_SYSTEM
+    With mobjChrgCdComboSQL
+        If .Initialized = False Then
+            .Initialize
+            .Populate
+        End If
+    End With
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_DropDown")
+End Sub
+
+Private Sub cboChrgCd_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (cboChrgCd.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_GotFocus")
+End Sub
+
+Private Sub cboChrgCd_LostFocus()
+On Error GoTo ERR_SYSTEM
+    Dim llCurrRow As Long
+    Dim llRet As Long
+    Dim ldtCCTD As Date
+
+    fld_LostFocus0 Me, (cboChrgCd.Tag), PreValue, Initial_Color
+    If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        If cboChrgCd.Text = "" Then
+            txtChrgBillingTyp.Text = ""
+            llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("BILLING_TYP", "", False)
+            lblChrgCd.Caption = ""
+            lblChrgBillingDesc.Caption = ""
+            txtBillingTyp.Text = ""
+            lblBillingDesc.Caption = ""
+        End If
+    
+        ' Set filters on the BILLING_SCHM & CHRG_SCHM
+        mSetChrgSchmFilter False
+        mSetBillingSchmFilter False
+        GetDispData
+        
+        If mobjChrgCdComboSQL.Validate Then
+            mobjChrgCdComboSQL.UpdateLinkedControls
+            ' Check if this is a commission that is not yet processed. (Not Commission is collected yet)
+            ldtCCTD = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("COMM_COL_TILL_DT")
+            If DateDiff("d", ldtCCTD, EMPTY_DT) = 0 Then
+                mSetNewChrgDtlDefault False
+            End If
+        End If
+        
+        mSetChrgSchmDisEnable ' To set the disable/enable properties regarding the charge level
+        mSetBillingSchmDisEnable ' To set the disable/enable properties regarding the billing level
+        
+        'Change the charge action code from short name to full name for display
+        Call SetChrgActCd(0)
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_LostFocus")
+End Sub
+
+Private Sub cboChrgCd_UnboundReadData(ByVal RowBuf As SSDataWidgets_B.ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+     
+    If Not mobjChrgCdComboSQL Is Nothing Then
+        mobjChrgCdComboSQL.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub
+
+Private Sub cboChrgCd_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+    With mobjChrgCdComboSQL
+        If .Initialized = False Then
+            .Initialize
+            .Populate
+        End If
+        RtnPassed = .Validate(Text)
+        .UpdateLinkedControls giCLEAR_IF_INVALID
+    End With
+
+    If Text = "0" Then
+        RtnPassed = True
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_ValidateList", Text, RtnPassed)
+End Sub
+
+
+Private Sub cboChrgEndDay_CloseUp()
+On Error GoTo ERR_SYSTEM
+    mcsrvChrgEndDay.ShowCalendar
+    gHandle_Got_Focus cboChrgEndDay
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgEndDay_CloseUp")
+End Sub
+
+Private Sub cboChrgEndDay_DropDown()
+On Error GoTo ERR_SYSTEM
+    PreValue = cboChrgEndDay.Text
+    SendKeys "{enter}"
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgEndDay_DropDown")
+End Sub
+
+Private Sub cboChrgEndDay_GotFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvChrgEndDay.ShowCalendarInProgress = False Then
+        fld_GotFocus0 Me, (cboChrgEndDay.Tag), PreValue, Initial_Color
+    Else
+        mcsrvChrgEndDay.CompleteShowCalendar
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgEndDay_GotFocus")
+End Sub
+
+Private Sub cboChrgEndDay_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If KeyCode = Look_Up_Key Then
+        cboChrgEndDay_DropDown
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgEndDay_KeyDown", KeyCode, Shift)
+End Sub
+
+Private Sub cboChrgEndDay_LostFocus()
+On Error GoTo ERR_SYSTEM
+    Dim llRet As Long
+    If mcsrvChrgEndDay.ShowCalendarInProgress = False Then
+        fld_LostFocus0 Me, (cboChrgEndDay.Tag), PreValue, Initial_Color
+        If cboChrgEndDay.Text = "" Then
+            If ProdCat = "CIF" Then
+                 'llRet = TransObj.Item("BILL_CHRG_SCHM_CIF").SetAttr("EFF_TO_DT", MAX_DT, False)
+                 llRet = StoreAttr(TransObj.Item("BILL_CHRG_SCHM_CIF"), "EFF_TO_DT", MAX_DT, False)
+            ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+                'llRet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC).SetAttr("EFF_TO_DT", MAX_DT, False)
+                llRet = StoreAttr(TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC), "EFF_TO_DT", MAX_DT, False)
+            End If
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgEndDay_LostFocus")
+End Sub
+
+Private Sub cboChrgEndDay_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+    Dim StartDys As Date
+    Dim EndDys As Date
+    Dim ErrCode As Long
+
+    If ProdCat = "CIF" Then
+        StartDys = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_FROM_DT")
+        EndDys = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_TO_DT")
+        
+        If cboChrgStartDay.Text <> "" And cboChrgEndDay.Text <> "" Then
+            If DateDiff("d", StartDys, EndDys) < 0 Then
+                ErrCode = 80032
+                RtnPassed = mcsrvChrgEndDay.Validate(Text, StartDys, EndDys, True, ErrCode)
+            End If
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgEndDay_ValidateList", Text, RtnPassed)
+End Sub
+
+Private Sub cboChrgStartDay_CloseUp()
+On Error GoTo ERR_SYSTEM
+    mcsrvChrgStartDay.ShowCalendar
+    gHandle_Got_Focus cboChrgStartDay
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_CloseUp")
+End Sub
+
+Private Sub cboChrgStartDay_DropDown()
+On Error GoTo ERR_SYSTEM
+    PreValue = cboChrgStartDay.Text
+    SendKeys "{enter}"
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_DropDown")
+End Sub
+
+Private Sub cboChrgStartDay_GotFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvChrgStartDay.ShowCalendarInProgress = False Then
+        fld_GotFocus0 Me, (cboChrgStartDay.Tag), PreValue, Initial_Color
+    Else
+        mcsrvChrgStartDay.CompleteShowCalendar
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_GotFocus")
+End Sub
+
+Private Sub cboChrgStartDay_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If KeyCode = Look_Up_Key Then
+        cboChrgStartDay_DropDown
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_KeyDown", KeyCode, Shift)
+End Sub
+
+Private Sub cboChrgStartDay_LostFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvChrgStartDay.ShowCalendarInProgress = False Then
+        If cboChrgStartDay.Text = "" Then
+            cboChrgStartDay.Text = EMPTY_DT
+        End If
+        fld_LostFocus0 Me, (cboChrgStartDay.Tag), PreValue, Initial_Color
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            mValidateChrgSchm
+        End If
+        
+        If ProdCat = "CIF" Then
+            mValidateChrgSchm
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_LostFocus")
+End Sub
+
+Private Sub cboChrgStartDay_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+    Dim StartDys As Date
+    Dim EndDys As Date
+    Dim CurrentDt As Date
+    Dim ErrCode As Long
+    Dim current As Long
+    Dim i As Integer
+    
+    If ProdCat = "CIF" Then
+        StartDys = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_FROM_DT")
+        EndDys = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_TO_DT")
+        
+        If cboChrgStartDay.Text <> "" Then
+            'check dupulicate key
+            current = TransObj.Item("BILL_CHRG_SCHM_CIF").CurrentRow
+            CurrentDt = cboChrgStartDay.Text
+                
+            For i = 0 To TransObj.Item("BILL_CHRG_SCHM_CIF").RowCount - 1
+                TransObj.Item("BILL_CHRG_SCHM_CIF").CurrentRow = i
+                If DateDiff("d", CurrentDt, TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_FROM_DT")) = 0 And i <> current Then
+                    ErrCode = 20007
+                    RtnPassed = 0
+                    GlobalErrorMessage = 20007
+                End If
+            Next
+        End If
+        
+        
+        If cboChrgStartDay.Text <> "" And cboChrgEndDay.Text <> "" And ErrCode <> 20007 Then
+            If DateDiff("d", StartDys, EndDys) < 0 Then
+                ErrCode = 80032
+                RtnPassed = mcsrvChrgStartDay.Validate(Text, StartDys, EndDys, True, ErrCode)
+            End If
+        End If
+    ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        'Call mValidateChrgSchm 'Checking in LC online screen
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_ValidateList", Text, RtnPassed)
+End Sub
+
+Private Sub cboCommStartDt_CloseUp()
+On Error GoTo ERR_SYSTEM
+    mcsrvCommStartDt.ShowCalendar
+    gHandle_Got_Focus cboCommStartDt
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboCommStartDt_CloseUp")
+End Sub
+
+Private Sub cboCommStartDt_DropDown()
+On Error GoTo ERR_SYSTEM
+    PreValue = cboCommStartDt.Text
+    SendKeys "{enter}"
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboCommStartDt_DropDown")
+End Sub
+
+Private Sub cboCommStartDt_GotFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvCommStartDt.ShowCalendarInProgress = False Then
+        fld_GotFocus0 Me, (cboCommStartDt.Tag), PreValue, Initial_Color
+    Else
+        mcsrvCommStartDt.CompleteShowCalendar
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboCommStartDt_GotFocus")
+End Sub
+
+Private Sub cboCommStartDt_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If KeyCode = Look_Up_Key Then
+        cboCommStartDt_DropDown
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboCommStartDt_KeyDown", KeyCode, Shift)
+End Sub
+
+Private Sub cboCommStartDt_LostFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvCommStartDt.ShowCalendarInProgress = False Then
+        fld_LostFocus0 Me, (cboCommStartDt.Tag), PreValue, Initial_Color
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboCommStartDt_LostFocus")
+End Sub
+
+Private Sub cboLastBillDt_CloseUp()
+On Error GoTo ERR_SYSTEM
+    mcsrvLastBillDt.ShowCalendar
+    gHandle_Got_Focus cboLastBillDt
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboLastBillDt_CloseUp")
+End Sub
+
+Private Sub cboLastBillDt_DropDown()
+On Error GoTo ERR_SYSTEM
+    PreValue = cboLastBillDt.Text
+    SendKeys "{enter}"
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboLastBillDt_DropDown")
+End Sub
+
+Private Sub cboLastBillDt_GotFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvLastBillDt.ShowCalendarInProgress = False Then
+        fld_GotFocus0 Me, (cboLastBillDt.Tag), PreValue, Initial_Color
+    Else
+        mcsrvLastBillDt.CompleteShowCalendar
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboLastBillDt_GotFocus")
+End Sub
+
+Private Sub cboLastBillDt_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If KeyCode = Look_Up_Key Then
+        cboLastBillDt_DropDown
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboLastBillDt_KeyDown", KeyCode, Shift)
+End Sub
+
+Private Sub cboLastBillDt_LostFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvLastBillDt.ShowCalendarInProgress = False Then
+        fld_LostFocus0 Me, (cboLastBillDt.Tag), PreValue, Initial_Color
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboLastBillDt_LostFocus")
+End Sub
+
+Private Sub cboNextBillDt_CloseUp()
+On Error GoTo ERR_SYSTEM
+    mcsrvNextBillDt.ShowCalendar
+    gHandle_Got_Focus cboNextBillDt
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_CloseUp")
+End Sub
+
+Private Sub cboNextBillDt_DropDown()
+On Error GoTo ERR_SYSTEM
+    PreValue = cboNextBillDt.Text
+    SendKeys "{enter}"
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_DropDown")
+End Sub
+
+Private Sub cboNextBillDt_GotFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvNextBillDt.ShowCalendarInProgress = False Then
+        fld_GotFocus0 Me, (cboNextBillDt.Tag), PreValue, Initial_Color
+    Else
+        mcsrvNextBillDt.CompleteShowCalendar
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_GotFocus")
+End Sub
+
+Private Sub cboNextBillDt_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If KeyCode = Look_Up_Key Then
+        cboNextBillDt_DropDown
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_KeyDown", KeyCode, Shift)
+End Sub
+
+Private Sub cboNextBillDt_LostFocus()
+On Error GoTo ERR_SYSTEM
+    If mcsrvNextBillDt.ShowCalendarInProgress = False Then
+        fld_LostFocus0 Me, (cboNextBillDt.Tag), PreValue, Initial_Color
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_LostFocus")
+End Sub
+
+'---[EMEA]---[20061010]
+Private Sub cboSkip_CloseUp()
+    On Error GoTo ERR_SYSTEM
+    With mcsrvSkipAmortAccural
+        .Validate
+        .UpdateLinkedControls giCLEAR_IF_INVALID
+    End With
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_CloseUp")
+End Sub
+
+Private Sub cboSkip_DropDown()
+On Error GoTo ERR_SYSTEM
+    With mcsrvSkipAmortAccural
+        If .Initialized = False Then
+            .Initialize
+            .Columns("PRODUCT_LVL").Caption = "Code"
+            .Columns("PRODUCT_LVL").Width = 1000
+            .Columns("PRODUCT_LVL_DESC").Caption = "Description"
+            .Columns("PRODUCT_LVL_DESC").Width = 1500
+            .Populate
+        End If
+    End With
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_DropDown")
+End Sub
+
+Private Sub cboSkip_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (cboSkip.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_GotFocus")
+End Sub
+
+Private Sub cboSkip_LostFocus()
+On Error GoTo ERR_SYSTEM
+
+    fld_LostFocus0 Me, (cboSkip.Tag), PreValue, Initial_Color
+    
+    If cboSkip.Text <> "N" Then
+        If Not Is_Enq Then
+            If TranType = GT_TTY_FIN_ADJ Then
+                fld_EnableCtrl txtSkipReason
+                fld_SetMandatory txtSkipReason, "", "", IS_MANDATORY_FIELD
+            End If
+        Else
+            fld_DisableCtrl txtSkipReason
+        End If
+    Else
+        If Not Is_Enq Then
+            If Not FormLoading Then
+                txtSkipReason.Text = ""
+                llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("SKIP_ACCR_AMORTN_REASON", "", False)
+            End If
+            fld_SetMandatory txtSkipReason, "", "", NOT_MANDATORY_FIELD
+            fld_DisableCtrl txtSkipReason
+        Else
+            fld_DisableCtrl txtSkipReason
+        End If
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_LostFocus")
+End Sub
+
+Private Sub cboSkip_UnboundReadData(ByVal RowBuf As SSDataWidgets_B.ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+    If Not mcsrvSkipAmortAccural Is Nothing Then
+           mcsrvSkipAmortAccural.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub
+'---[EMEA]---[END]
+Private Sub chkChrgSchmCnfm_Click(Value As Integer)
+    If chkChrgSchmCnfm.Value Then
+        pnlChrgSchmCnfm.ForeColor = QBColor(G_RED)
+        pnlChrgSchmCnfm.Caption = "Yes"
+        bBillingChrgCfnmInd = True
+    Else
+        pnlChrgSchmCnfm.ForeColor = QBColor(G_BLUE)
+        pnlChrgSchmCnfm.Caption = "No"
+        bBillingChrgCfnmInd = False
+    End If
+End Sub
+
+Private Sub chkChrgSchmCnfm_GotFocus()
+    Call SetFocusColor(BACK_COLOR, pnlChrgSchmCnfm, Initial_Color)
+End Sub
+
+Private Sub chkChrgSchmCnfm_LostFocus()
+    Call RestoreColor(BACK_COLOR, pnlChrgSchmCnfm, Initial_Color)
+End Sub
+
+Private Sub chkTradeRev_Click(Value As Integer)
+On Error GoTo ERR_SYSTEM
+fld_SetAttr0 Me, (chkTradeRev.Tag), PreValue
+    
+If Not bLostFocus% Then
+        If chkTradeRev.Caption = "Yes" Then
+            chkTradeRev.Caption = "No"
+        Else
+            chkTradeRev.Caption = "Yes"
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.chkTradeRev_Click", Value)
+End Sub
+
+Private Sub Form_Load()
+On Error GoTo ERR_SYSTEM
+        
+    'Recordset dynamic binding on LC level or customer level
+    If ProdCat = "CIF" Then
+        frmBillingSch.Tag = "frmBillingSch_CIF"
+    Else
+        frmBillingSch.Tag = "frmBillingSch"
+    End If
+    
+    Call mPreInitializeForm
+    Call mInitializeControlServerControls
+    Call MyPreForm
+    
+    If ProdCat = "CIF" Then
+        Call FilterBillRecSet
+        Call FilterChrgRecSet
+    ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        mSetBillingSchmFilter False
+        mSetChrgSchmFilter False
+        mSetChrgSchmDisEnable
+        mSetBillingSchmDisEnable
+        mSetSkipAmortAccuralDisEnable
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_Load")
+End Sub
+
+Private Sub GetDispData()
+On Error GoTo ERR_SYSTEM
+Dim loRecObj As OGTRecordSet
+    frm_Load Me
+    
+    mSetSkipAmortAccuralDisEnable
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.GetDispData")
+End Sub
+
+Private Sub Form_Unload(Cancel As Integer)
+On Error GoTo ERR_SYSTEM
+    'CleanUP objects
+    Call mReleaseControlServerControls
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_Unload", Cancel)
+End Sub
+
+Private Sub MyPreForm()
+On Error GoTo ERR_SYSTEM
+    If DESIGNMODE Then Exit Sub
+    GetDispData
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.MyPreForm")
+End Sub
+
+Sub mInitializeControlServerControls()
+On Error GoTo ERR_SYSTEM
+    Set mcsrvBillEndDay = New CComboByCalendar
+    With mcsrvBillEndDay
+        Set .ComboObject = cboBillEndDay
+        .DateFormat = DateFormat
+    End With
+    
+    Set mcsrvBillStartDay = New CComboByCalendar
+    With mcsrvBillStartDay
+        Set .ComboObject = cboBillStartDay
+        .DateFormat = DateFormat
+    End With
+    
+    Set mcsrvChrgStartDay = New CComboByCalendar
+    With mcsrvChrgStartDay
+        Set .ComboObject = cboChrgStartDay
+        .DateFormat = DateFormat
+    End With
+
+    Set mcsrvChrgEndDay = New CComboByCalendar
+    With mcsrvChrgEndDay
+        Set .ComboObject = cboChrgEndDay
+        .DateFormat = DateFormat
+    End With
+    
+    Set mcsrvCommStartDt = New CComboByCalendar
+    With mcsrvCommStartDt
+        Set .ComboObject = cboCommStartDt
+        .DateFormat = DateFormat
+    End With
+    
+    Set mcsrvNextBillDt = New CComboByCalendar
+    With mcsrvNextBillDt
+        Set .ComboObject = cboNextBillDt
+        .DateFormat = DateFormat
+    End With
+    
+    Set mcsrvLastBillDt = New CComboByCalendar
+    With mcsrvLastBillDt
+        Set .ComboObject = cboLastBillDt
+        .DateFormat = DateFormat
+    End With
+        
+    Set mcsrvChrgAction = New CComboByArray
+    With mcsrvChrgAction
+        .ComboID = glCOMBO_ID_GENERIC_BY_ARRAY
+        Set .ComboObject = cboChrgAction
+       
+        If ProdCat = "CIF" Then
+            Dim DataArrayCIF(0 To 2, 0 To 1)
+            DataArrayCIF(0, 0) = CHRG_ACT_TAKE
+            DataArrayCIF(0, 1) = CHRG_ACT_CD_TAKE
+            DataArrayCIF(1, 0) = CHRG_ACT_WAIVE
+            DataArrayCIF(1, 1) = CHRG_ACT_CD_WAIVE
+            DataArrayCIF(2, 0) = CHRG_ACT_REFER
+            DataArrayCIF(2, 1) = CHRG_ACT_CD_REFER
+            .DataArray = DataArrayCIF
+        Else
+            'For NLC
+            Dim DataArrayLC(0 To 1, 0 To 1)
+            DataArrayLC(0, 0) = CHRG_ACT_TAKE
+            DataArrayLC(0, 1) = CHRG_ACT_CD_TAKE
+            DataArrayLC(1, 0) = CHRG_ACT_WAIVE
+            DataArrayLC(1, 1) = CHRG_ACT_CD_WAIVE
+            .DataArray = DataArrayLC
+        End If
+        
+        .FieldNamesArray = Array("PRODUCT_LVL_DESC", "PRODUCT_LVL")
+        
+    End With
+    
+    '---[EMEA]---[20061004]
+    'Skip Amortization/Accural: N - No, Y - Yes, S - Skip one cycle
+    Set mcsrvSkipAmortAccural = New CComboByArray
+    With mcsrvSkipAmortAccural
+        .ComboID = glCOMBO_ID_GENERIC_BY_ARRAY
+        Set .ComboObject = cboSkip
+       
+        'For NLC
+        If ProdCat <> "CIF" Then
+            Dim DataArraySkip(0 To 2, 0 To 1)
+            DataArraySkip(0, 0) = SKIP_CD_YES
+            DataArraySkip(0, 1) = SKIP_YES
+            DataArraySkip(1, 0) = SKIP_CD_NO
+            DataArraySkip(1, 1) = SKIP_NO
+            DataArraySkip(2, 0) = SKIP_CD_ONE_CYCLE
+            DataArraySkip(2, 1) = SKIP_ONE_CYCLE
+            .DataArray = DataArraySkip
+        End If
+        
+        .FieldNamesArray = Array("PRODUCT_LVL", "PRODUCT_LVL_DESC")
+    End With
+    '---[EMEA]---[END]
+
+    '---[EMEA]---[20060316]
+    Set mcsrvChrgCcyCd = New CComboByLookup
+    With mcsrvChrgCcyCd
+        Set .ComboObject = cboChrgCcyCd
+        .ComboID = glCOMBO_ID_GENERIC_BY_LOOKUP
+        .LookupID = "Currency"
+    End With
+    
+    Set mcsrvMinChrgCcyCd = New CComboByLookup
+    With mcsrvMinChrgCcyCd
+        Set .ComboObject = cboMinAmtCcy
+        .ComboID = glCOMBO_ID_GENERIC_BY_LOOKUP
+        .LookupID = "Currency"
+    End With
+    '---[EMEA]---[END]
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mInitializeControlServerControls")
+End Sub
+
+Private Sub mPreInitializeForm()
+On Error GoTo ERR_SYSTEM
+    'This flag will indicate if InitializeForm has
+    'been called.  See InitializeForm for more details.
+    
+    mbInitializeFormHasBeenCalled = False
+    
+    'This form will be disabled until InitializeForm
+    'is called.  When InitializeForm completes it will
+    'enabled this form again
+    
+    Me.Enabled = False
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mPreInitializeForm")
+End Sub
+
+Public Sub InitializeForm()
+On Error GoTo ERR_SYSTEM
+    Dim lsLiabId As String
+    Dim CIF_commcolby As String
+    Dim CIF_otherdtl As String
+    
+    If mbInitializeFormHasBeenCalled = False Then
+        Call MyPreForm
+        Call mInitializeControlServerControls
+        Call mInitializeChrgCdCombo
+        
+        If ProdCat = "CIF" Then
+            ' special handle for CIF
+            If TransObj.Item("TBL_HDR").GetAttr("TRAN_STATUS") = "" Then
+                mForceGetBillChrgSchm
+            End If
+            GetCommColByInd lsLiabId, CIF_commcolby, CIF_otherdtl
+            If (CIF_commcolby <> "") Then
+                'Initial in other coding
+            Else
+                optCollectBy(0).Value = False
+                optCollectBy(1).Value = False
+                optCollectBy(2).Value = False
+            End If
+            
+        End If
+        
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            'Get the latest snapshot of the Liability Party's Comm_col_by_ind & Other_dtl from CUST_LCL_ADD table
+            If TransObj.Item(GT_RS_TP_LIAB_PTY).RowCount = 1 Then
+                lsLiabId = TransObj.Item(GT_RS_TP_LIAB_PTY).GetAttr("BKG_PTY_ID")
+            Else
+                lsLiabId = ""
+            End If
+            GetLatestCommColByInd lsLiabId, msCommColByInd, msOtherDtl
+            ' only applicable with Txn_Info.TranStatus = GT_TRAN_STATUS_NEW
+            If Txn_Info.TranStatus = GT_TRAN_STATUS_NEW Then
+                mForceGetBillChrgSchm
+            End If
+        End If
+        If Not Is_Enq Then
+            chkChrgSchmCnfm.Value = False
+            pnlChrgSchmCnfm.ForeColor = QBColor(G_BLUE)
+            pnlChrgSchmCnfm.Caption = "No"
+            bBillingChrgCfnmInd = False
+        Else
+            lblChrgSchmCnfm.Visible = False
+            pnlChrgSchmCnfm.Visible = False
+        End If
+        If ((Not ProdType = "CIF") And ProdCat = "CIF") Then
+            lblChrgSchmCnfm.Visible = False
+            pnlChrgSchmCnfm.Visible = False
+        End If
+        Me.Enabled = True
+        mbInitializeFormHasBeenCalled = True
+    End If
+
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.InitializeForm")
+End Sub
+
+Private Sub txtLastBillCcy_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtLastBillCcy.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtLastBillCcy_GotFocus")
+End Sub
+
+Private Sub txtLastBillCcy_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (txtLastBillCcy.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtLastBillCcy_LostFocus")
+End Sub
+
+Private Sub txtAmortCcy_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtAmortCcy.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtAmortCcy_GotFocus")
+End Sub
+
+Private Sub txtAmortCcy_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (txtAmortCcy.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtAmortCcy_LostFocus")
+End Sub
+
+Private Sub txtAccrualCcy_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtAccrualCcy.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtAccrualCcy_GotFocus")
+End Sub
+
+Private Sub txtAccrualCcy_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (txtAccrualCcy.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtAccrualCcy_LostFocus")
+End Sub
+
+Private Sub multi_msg1_Click()
+On Error GoTo ERR_SYSTEM
+    txt_multi1_Change
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.multi_msg1_Click")
+End Sub
+
+Private Sub multi_msg2_Click()
+On Error GoTo ERR_SYSTEM
+    txt_multi2_Change
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.multi_msg2_Click")
+End Sub
+
+
+Private Sub multi_msg3_Click()
+On Error GoTo ERR_SYSTEM
+    txt_multi3_Change
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.multi_msg3_Click")
+End Sub
+
+
+Private Sub multi_msg4_Click()
+On Error GoTo ERR_SYSTEM
+    txt_multi4_Change
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.multi_msg4_Click")
+End Sub
+
+Private Sub optCalendar_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_SetAttr0 Me, (optCalendar(Index).Tag), PreValue
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCalendar_Click", Index, Value)
+End Sub
+
+Private Sub optCalendar_GotFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (optCalendar(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCalendar_GotFocus", Index)
+End Sub
+
+Private Sub optCalendar_LostFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (optCalendar(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCalendar_LostFocus", Index)
+End Sub
+
+Private Sub optChrgSchmCal_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_SetAttr0 Me, (optChrgSchmCal(Index).Tag), PreValue
+    ' To update the VALDY_PRD & PRD_BASIS according to the BASE_YR value
+    Call mSetValdyPrd_PrdBasis
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optChrgSchmCal_Click", Index, Value)
+End Sub
+
+Private Sub mSetValdyPrd_PrdBasis()
+On Error GoTo ERR_SYSTEM
+Dim loRecSet As Object
+Dim llRet As Long
+    
+    If ProdCat = "CIF" Then
+        Set loRecSet = TransObj.Item("BILL_CHRG_SCHM_CIF")
+    ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        Set loRecSet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+    End If
+    
+    If Not loRecSet Is Nothing Then
+        If loRecSet.RowCount > 0 Then
+            If (ProdCat = "CIF" And loRecSet.GetAttr("CHRG_LVL") = CIF_LEVEL_VALUE) Or _
+                ((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And loRecSet.GetAttr("CHRG_LVL") = LC_LEVEL_VALUE) Then
+                Select Case loRecSet.GetAttr("BASE_YR")
+                Case "S"
+                    llRet = loRecSet.SetAttr("VALDY_PRD", "360", False)
+                    llRet = loRecSet.SetAttr("PRD_BASIS", "D", False)
+                Case "5"
+                    llRet = loRecSet.SetAttr("VALDY_PRD", "365", False)
+                    llRet = loRecSet.SetAttr("PRD_BASIS", "D", False)
+                Case "6"
+                    llRet = loRecSet.SetAttr("VALDY_PRD", "366", False)
+                    llRet = loRecSet.SetAttr("PRD_BASIS", "D", False)
+                Case Else
+                    'Do nothing
+                End Select
+            End If
+        End If
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetValdyPrd_PrdBasis")
+End Sub
+
+Private Sub optChrgSchmCal_GotFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (optChrgSchmCal(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optChrgSchmCal_GotFocus", Index)
+End Sub
+
+Private Sub optChrgSchmCal_LostFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (optChrgSchmCal(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optChrgSchmCal_LostFocus", Index)
+End Sub
+
+Private Sub optCollectBy_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+    Dim llRet As Long
+    If ProdCat = "CIF" Then
+        fld_SetAttr0 Me, (optCollectBy(Index).Tag), PreValue
+        If Not FormLoading Then
+            txtOther.Text = ""
+            llRet = TransObj.Item("CUST_LCL_ADD").SetAttr("OTHER_DTL", "", False)
+        End If
+        Select Case Index
+            Case 0
+                fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+                fld_DisableCtrl txtOther
+            Case 1
+                fld_SetMandatory txtOther, "", "", IS_MANDATORY_FIELD
+                fld_EnableCtrl txtOther
+            Case 2
+                fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+                fld_EnableCtrl txtOther
+        End Select
+    Else
+        If (TranType = GT_TTY_ADVISING Or TranType = GT_TTY_AMENDMENT _
+            Or TranType = GT_TTY_FIN_ADJ Or TranType = GT_TTY_ISSUANCE) Then
+            fld_SetAttr0 Me, (optCollectBy(Index).Tag), PreValue
+            If Not FormLoading Then
+                txtOther.Text = ""
+                llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("OTHER_DTL", "", False)
+            End If
+            Select Case Index
+            Case 0
+                fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+                fld_DisableCtrl txtOther
+            Case 1
+                fld_SetMandatory txtOther, "", "", IS_MANDATORY_FIELD
+                fld_EnableCtrl txtOther
+            Case 2
+                fld_SetMandatory txtOther, "", "", NOT_MANDATORY_FIELD
+                fld_EnableCtrl txtOther
+            End Select
+         End If
+    End If
+
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectBy_Click", Index, Value)
+End Sub
+
+Private Sub optCollectBy_GotFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (optCollectBy(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectBy_GotFocus", Index)
+End Sub
+
+Private Sub optCollectBy_LostFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (optCollectBy(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectBy_LostFocus", Index)
+End Sub
+
+Private Sub optCollectMthd_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+    
+    fld_SetAttr0 Me, (optCollectMthd(Index).Tag), PreValue
+    
+    ' For CIF level, only BILLING_SCHM with Level 'C' can be modified
+    ' For LC level, only those with Level 'L' can be modified
+    If (ProdCat = "CIF" And txtBillingLvl.Text = CIF_LEVEL_VALUE) Or _
+       ((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And txtBillingLvl.Text = LC_LEVEL_VALUE) Then
+        BillMethodCtrlSetup Index
+        
+        'initialize the default of the option button
+        If Index = 1 And optPrdWhen(0).Value = False And optPrdWhen(1).Value = False Then
+            optPrdWhen(0).Value = True
+        End If
+        
+    End If
+    
+
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectMthd_Click", Index, Value)
+End Sub
+
+Private Sub optCollectMthd_GotFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (optCollectMthd(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectMthd_GotFocus", Index)
+End Sub
+
+Private Sub optCollectMthd_LostFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (optCollectMthd(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optCollectMthd_LostFocus", Index)
+End Sub
+
+Private Sub optPrdWhen_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_SetAttr0 Me, (optPrdWhen(Index).Tag), PreValue
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optPrdWhen_Click", Index, Value)
+End Sub
+
+Private Sub BillMethodCtrlSetup(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    Dim llRet As Long
+    
+    If Index = 0 Then
+        fld_DisableCtrl FraPeriodic
+        fld_DisableCtrl lblNoMonth
+        fld_DisableCtrl lblNoMonth
+        fld_DisableCtrl txtPrdNoMonth
+
+        fld_EnableCtrl FraCalendar
+        fld_EnableCtrl optCalendar(0)
+        fld_EnableCtrl optCalendar(1)
+        fld_EnableCtrl optCalendar(2)
+        fld_EnableCtrl optCalendar(3)
+        
+        txtPrdNoMonth.Text = ""
+        
+        ' Bug #14492
+        Dim lsBilling_Cal_Adv_Allowed As String
+        Call GetPUConfigValue(ProcUnit, "BILLING_CAL_ADV_ALLOWED", lsBilling_Cal_Adv_Allowed)
+        If lsBilling_Cal_Adv_Allowed = "Y" Then
+            fld_EnableCtrl fraWhen
+            fld_EnableCtrl optPrdWhen(0)
+            fld_EnableCtrl optPrdWhen(1)
+        Else
+            fld_DisableCtrl fraWhen
+            fld_DisableCtrl optPrdWhen(0)
+            fld_DisableCtrl optPrdWhen(1)
+            optPrdWhen(0).Value = False
+            optPrdWhen(1).Value = True
+        End If
+        
+        'clear the value
+        If ProdCat = "CIF" Then
+            llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("PRD_FREQ", 0, False)
+            llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("PRD_BASIS", "", False)
+            fld_SetMandatory optCalendar(0), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(1), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(2), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(3), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory txtPrdNoMonth, "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+            
+            If lsBilling_Cal_Adv_Allowed <> "Y" Then
+                llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("PRD_WHEN_IND", "E", False)
+            End If
+            
+        ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            'Set mandatory to the calendar freq option buttons
+            fld_SetMandatory optCalendar(0), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(1), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(2), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(3), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory txtPrdNoMonth, "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+            llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_BASIS", "", False)
+            llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_FREQ", 0, False)
+            If lsBilling_Cal_Adv_Allowed <> "Y" Then
+                llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_WHEN_IND", "E", False)
+            End If
+        End If
+        
+        'Should never pre-set a default value at both CIF/LC level
+        'optCalendar(0).Value = True
+                
+    ElseIf Index = 1 Then
+    
+        fld_DisableCtrl FraCalendar
+        fld_DisableCtrl optCalendar(0)
+        fld_DisableCtrl optCalendar(1)
+        fld_DisableCtrl optCalendar(2)
+        fld_DisableCtrl optCalendar(3)
+        fld_EnableCtrl FraPeriodic
+        fld_EnableCtrl lblNoMonth
+        fld_EnableCtrl fraWhen
+        fld_EnableCtrl optPrdWhen(0)
+        fld_EnableCtrl optPrdWhen(1)
+        fld_EnableCtrl txtPrdNoMonth
+        
+        optCalendar(0).Value = False
+        optCalendar(1).Value = False
+        optCalendar(2).Value = False
+        optCalendar(3).Value = False
+               
+        'clear the value
+        If ProdCat = "CIF" Then
+            llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("CALNDR_FREQ", "", False)
+            fld_SetMandatory optCalendar(0), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(1), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(2), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(3), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory txtPrdNoMonth, "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+        ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            'Set mandatory to the calendar freq option buttons
+            fld_SetMandatory optCalendar(0), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(1), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(2), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory optCalendar(3), "", "", NOT_MANDATORY_FIELD
+            fld_SetMandatory txtPrdNoMonth, "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+            fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+            'Default and the only option supported by front end now is "Month"
+            llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_BASIS", "M", False)
+            'Reset the calendar frequency
+            llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("CALNDR_FREQ", "", False)
+        End If
+        
+        'Should never pre-set a default value at both CIF/LC level
+        'optPrdWhen(0).Value = True
+    ElseIf Index = -1 Then
+        
+        fld_DisableCtrl optCalendar(0)
+        fld_DisableCtrl optCalendar(1)
+        fld_DisableCtrl optCalendar(2)
+        fld_DisableCtrl optCalendar(3)
+        fld_DisableCtrl txtPrdNoMonth
+        fld_DisableCtrl optPrdWhen(0)
+        fld_DisableCtrl optPrdWhen(1)
+
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.BillMethodCtrlSetup", Index)
+End Sub
+
+Private Sub optPrdWhen_GotFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (optPrdWhen(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optPrdWhen_GotFocus", Index)
+End Sub
+
+Private Sub optPrdWhen_LostFocus(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (optPrdWhen(Index).Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optPrdWhen_LostFocus", Index)
+End Sub
+
+Private Sub txt_multi1_Change()
+On Error GoTo ERR_SYSTEM
+    
+    If ProdCat = "CIF" Then
+        'for small grid change row
+        Call FilterBillRecSet
+        Call FilterChrgRecSet
+    End If
+    
+    frm_GetDataOnly Me
+    
+    If ProdCat = "CIF" Then
+        Call HandleMultiChange
+    End If
+    
+    'hidden default value
+    Call HiddenDefaultDate
+    'Change the charge action code from short name to full name for display
+    Call SetChrgActCd(0)
+    
+    'If IsShow(frm_tg_ChrgProd) Then frm_tg_ChrgProd.txt_multi = txt_multi
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txt_multi1_Change")
+End Sub
+
+Private Sub txt_multi2_Change()
+On Error GoTo ERR_SYSTEM
+    
+    frm_GetDataOnly Me
+    
+    If ProdCat = "CIF" Then
+        Call HandleMultiChange
+    End If
+    
+    'hidden default value
+    Call HiddenDefaultDate
+    'Change the charge action code from short name to full name for display
+    Call SetChrgActCd(0)
+
+    
+    'If IsShow(frm_tg_ChrgProd) Then frm_tg_ChrgProd.txt_multi = txt_multi
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txt_multi2_Change")
+End Sub
+
+Private Sub txt_multi3_Change()
+On Error GoTo ERR_SYSTEM
+    
+    If ProdCat = "CIF" Then
+        'for small grid change row
+        Call FilterBillRecSet
+        Call FilterChrgRecSet
+    End If
+    
+    frm_GetDataOnly Me
+    
+    If ProdCat = "CIF" Then
+        Call HandleMultiChange
+    End If
+    
+    'hidden default value
+    Call HiddenDefaultDate
+    'Change the charge action code from short name to full name for display
+    Call SetChrgActCd(0)
+    
+    'If IsShow(frm_tg_ChrgProd) Then frm_tg_ChrgProd.txt_multi = txt_multi
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txt_multi3_Change")
+End Sub
+
+Private Sub txt_multi4_Change()
+On Error GoTo ERR_SYSTEM
+
+    frm_GetDataOnly Me
+    
+    If ProdCat = "CIF" Then
+        Call HandleMultiChange
+    End If
+    
+    'hidden default value
+    Call HiddenDefaultDate
+    'Change the charge action code from short name to full name for display
+    Call SetChrgActCd(0)
+    
+    'If IsShow(frm_tg_ChrgProd) Then frm_tg_ChrgProd.txt_multi = txt_multi
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txt_multi4_Change")
+End Sub
+
+'Private Sub txtChrgCd_GotFocus()
+'On Error GoTo ERR_SYSTEM
+'    fld_GotFocus0 Me, (txtChrgCd.Tag), PreValue, Initial_Color
+'Exit Sub
+'ERR_SYSTEM:
+'    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtChrgCd_GotFocus")
+'
+'End Sub
+'
+'Private Sub txtChrgCd_LostFocus()
+'On Error GoTo ERR_SYSTEM
+'    fld_LostFocus0 Me, (txtChrgCd.Tag), PreValue, Initial_Color
+'Exit Sub
+'
+'ERR_SYSTEM:
+'    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtChrgCd_LostFocus")
+'End Sub
+
+Private Sub txtChrgRate_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtChrgRate.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtChrgRate_GotFocus")
+End Sub
+
+Private Sub txtChrgRate_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (txtChrgRate.Tag), PreValue, Initial_Color
+    If txtChrgRate.Text = "" Then
+        txtChrgRate.Text = 0
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtChrgRate_LostFocus")
+End Sub
+
+Private Sub txtMinAmt_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtMinAmt.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtMinAmt_GotFocus")
+End Sub
+
+Private Sub txtMinAmt_LostFocus()
+On Error GoTo ERR_SYSTEM
+    Dim sValue As String
+
+    fld_LostFocus0 Me, (txtMinAmt.Tag), PreValue, Initial_Color
+    If txtMinAmt.Text = "" Then
+        txtMinAmt.Text = 0
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtMinAmt_LostFocus")
+End Sub
+
+Private Sub txtOther_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtOther.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtOther_GotFocus")
+End Sub
+
+Private Sub txtOther_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (txtOther.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtOther_LostFocus")
+End Sub
+
+Private Sub txtPrdNoMonth_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtPrdNoMonth.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.PrdNoMonth_GotFocus")
+End Sub
+
+Private Sub txtPrdNoMonth_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (txtPrdNoMonth.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.PrdNoMonth_LostFocus")
+End Sub
+
+Private Sub billing_minamt_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (billing_minamt.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.billing_minamt_GotFocus")
+End Sub
+
+Private Sub billing_minamt_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (billing_minamt.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.billing_minamt_LostFocus")
+End Sub
+
+Private Sub SetControlLookAndFeel()
+On Error GoTo ERR_SYSTEM
+    Dim strPurpCd As String
+    Dim strCfrmnInd As String
+    Dim lsLiabId As String
+    Dim lsCommColByInd As String
+    Dim lsOtherDtl As String
+    Dim sValue As String
+
+    strPurpCd = ""
+    strCfrmnInd = ""
+    
+    If Not TransObj.Item(GT_RS_LC_CTRY_EXT) Is Nothing Then
+        If Not IsNull(TransObj.Item(GT_RS_LC_CTRY_EXT).GetAttr("PURP_CD")) Then
+            strPurpCd = TransObj.Item(GT_RS_LC_CTRY_EXT).GetAttr("PURP_CD")
+        End If
+    End If
+    
+    If Not TransObj.Item(GT_RS_LC_DTL) Is Nothing Then
+        If Not IsNull(TransObj.Item(GT_RS_LC_DTL).GetAttr("CFRMN_IND")) Then
+            strCfrmnInd = TransObj.Item(GT_RS_LC_DTL).GetAttr("CFRMN_IND")
+        End If
+    End If
+    
+    If Not ProdCat = "CIF" Then
+        If ((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And strPurpCd <> "") Then
+            Call gbSetControlsEnableInContainer(Frame1, True)
+            Call gbSetControlsEnableInContainer(Frame7, True)
+            Call gbSetControlsEnableInContainer(Frame3, True)
+            Call gbSetControlsEnableInContainer(Frame4, True)
+            Call gbSetControlsEnableInContainer(Frame2, True)
+            Call gbSetControlsEnableInContainer(FraCalendar, True)
+            Call gbSetControlsEnableInContainer(FraPeriodic, True)
+            Call gbSetControlsEnableInContainer(SSPanel1, True)
+            Call gbSetControlsEnableInContainer(fraChrgCd, True)
+            Call gbSetControlsEnableInContainer(fraChrgSchm, True)
+            Call gbSetControlsEnableInContainer(Frame6, True)
+            Call gbSetControlsEnableInContainer(SSPanel5, True)
+            Call gbSetControlsEnableInContainer(SSPanel3, True)
+            fld_DisableCtrl View_Multi3(0)
+            fld_DisableCtrl View_Multi3(1)
+            fld_DisableCtrl View_Multi3(2)
+            fld_DisableCtrl View_Multi3(3)
+            fld_DisableCtrl View_Multi3(4)
+            fld_DisableCtrl View_Multi3(5)
+            fld_DisableCtrl txtBillingLvl
+            fld_DisableCtrl txtChrgBillingTyp
+            fld_DisableCtrl txtAmortAmt
+            fld_DisableCtrl txtAccrualAmt
+            fld_DisableCtrl txtLastBillAmt
+            fld_DisableCtrl cboLastBillDt
+            fld_DisableCtrl txtBillingTyp
+            fld_DisableCtrl lblBillingDesc
+            fld_DisableCtrl lblChrgCd
+            fld_DisableCtrl lblChrgBillingDesc
+            fld_DisableCtrl txtChrgLvl
+            fld_DisableCtrl cboChrgCd
+            '---[EMEA]---[20060216]
+            If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+                If sValue <> "Y" Then
+                    fld_DisableCtrl cboChrgCcyCd
+                    fld_DisableCtrl cboMinAmtCcy
+                End If
+            End If
+        Else
+            Call gbSetControlsEnableInContainer(Frame1, False)
+            Call gbSetControlsEnableInContainer(Frame7, False)
+            Call gbSetControlsEnableInContainer(Frame3, False)
+            Call gbSetControlsEnableInContainer(Frame4, False)
+            Call gbSetControlsEnableInContainer(Frame2, False)
+            Call gbSetControlsEnableInContainer(FraCalendar, False)
+            Call gbSetControlsEnableInContainer(FraPeriodic, False)
+            Call gbSetControlsEnableInContainer(SSPanel1, False)
+            Call gbSetControlsEnableInContainer(fraChrgCd, False)
+            Call gbSetControlsEnableInContainer(fraChrgSchm, False)
+            Call gbSetControlsEnableInContainer(Frame6, False)
+            Call gbSetControlsEnableInContainer(SSPanel5, False)
+            Call gbSetControlsEnableInContainer(SSPanel3, False)
+        End If
+    End If
+
+    If ProdCat = "CIF" Then
+        lblSkip.Visible = False
+        lblSkipReason.Visible = False
+        lblAmortAmt.Visible = False
+        lblAccrualAmt.Visible = False
+        lblCommStartDt.Visible = False
+        lblLastBillAmt.Visible = False
+        lblLastBillDt.Visible = False
+        lblNextBillDt.Visible = False
+        txtAmortCcy.Visible = False
+        txtAccrualCcy.Visible = False
+        txtLastBillCcy.Visible = False
+        '---[EMEA]---[20061010]
+        cboSkip.Visible = False
+        '---[EMEA]---[END]
+        txtSkipReason.Visible = False
+        txtAmortAmt.Visible = False
+        txtLastBillAmt.Visible = False
+        cboLastBillDt.Visible = False
+        txtAccrualAmt.Visible = False
+        cboCommStartDt.Visible = False
+        cboNextBillDt.Visible = False
+        
+        GetCommColByInd lsLiabId, lsCommColByInd, lsOtherDtl
+        If lsCommColByInd = "O" Or lsCommColByInd = "M" Then
+            fld_EnableCtrl txtOther
+        Else
+            fld_DisableCtrl txtOther
+        End If
+        
+        fraChrgSchm.Top = 1200
+        fraChrgCd.Height = 4900
+        fraChrgCd.Top = 1440
+        SSPanel3.Top = 4320
+        
+    ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+        lblSkip.Visible = True
+        lblSkipReason.Visible = True
+        lblAmortAmt.Visible = True
+        lblAccrualAmt.Visible = True
+        lblCommStartDt.Visible = True
+        lblLastBillAmt.Visible = True
+        lblLastBillDt.Visible = True
+        lblNextBillDt.Visible = True
+        txtAmortCcy.Visible = True
+        txtAccrualCcy.Visible = True
+        txtLastBillCcy.Visible = True
+        '---[EMEA]---[20061010]
+        cboSkip.Visible = True
+        '---[EMEA]---[END]
+        txtSkipReason.Visible = True
+        txtAmortAmt.Visible = True
+        txtLastBillAmt.Visible = True
+        cboLastBillDt.Visible = True
+        txtAccrualAmt.Visible = True
+        cboCommStartDt.Visible = True
+        cboNextBillDt.Visible = True
+        lblTradeRev.Visible = False
+        chkTradeRevPanel.Visible = False
+        
+        'Modify the Label of Frame7
+        'Frame7.Caption = "Commission Collected By (From CIF)"
+        'Disable the Commission collected by
+        fld_DisableCtrl txtAmortCcy
+        fld_DisableCtrl txtAccrualCcy
+        fld_DisableCtrl txtLastBillCcy
+        fld_DisableCtrl cboMinAmtCcy
+        fld_DisableCtrl txtOther
+                           
+        'Remove the Panel3D1
+        fld_DisableCtrl Panel3D1
+        Panel3D1.Visible = False
+        
+        'Activate / Inactivate cboChrgCd depending on the USER_DEFN_IND
+        mSetChrgDtlDisEnable
+        
+        'Allow user to choose Commission Collected By for ISSU/ADVI/AMND/FADJ
+        If (strPurpCd <> "") And TransObj.Item(GT_RS_LC_SYS_CNTRL).GetAttr("DUMMY_TYP") <> "P" Then
+            If (TranType = GT_TTY_ISSUANCE Or TranType = GT_TTY_ADVISING _
+             Or TranType = GT_TTY_AMENDMENT Or TranType = GT_TTY_FIN_ADJ) Then
+                fld_EnableCtrl optCollectBy(0)
+                fld_EnableCtrl optCollectBy(1)
+                fld_EnableCtrl optCollectBy(2)
+                If TransObj.Item(GT_RS_TP_LIAB_PTY).RowCount = 1 Then
+                    lsLiabId = TransObj.Item(GT_RS_TP_LIAB_PTY).GetAttr("BKG_PTY_ID")
+                Else
+                    lsLiabId = ""
+                End If
+                GetCommColByInd lsLiabId, lsCommColByInd, lsOtherDtl
+                If lsCommColByInd <> "T" Then
+                    fld_EnableCtrl txtOther
+                End If
+            End If
+        Else
+            fld_DisableCtrl optCollectBy(0)
+            fld_DisableCtrl optCollectBy(1)
+            fld_DisableCtrl optCollectBy(2)
+            fld_DisableCtrl txtOther
+        End If
+        
+        'for Change of Spec ==> Bug item#8429 "Skip Acc/Amort" flag is only changable in FADJ.
+        '---[EMEA]---[20061010]
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            If Not Is_Enq Then
+                If TranType = GT_TTY_FIN_ADJ Then
+                    fld_EnableCtrl cboSkip
+                    If cboSkip.Text <> "N" Then
+                        fld_EnableCtrl txtSkipReason
+                    End If
+                Else
+                    fld_DisableCtrl cboSkip
+                    fld_DisableCtrl txtSkipReason
+                End If
+            Else
+                fld_DisableCtrl txtSkipReason
+            End If
+        End If
+        '---[EMEA]---[END]
+
+        ' to refresh all the label, billing scheme, chrg scheme image.
+        Call cboChrgCd_CloseUp
+        Call cboChrgCd_LostFocus
+        
+    End If
+    
+    'hidden default date (applicable for NLC, XLC and CIF)
+    Call HiddenDefaultDate
+    
+    If Is_Enq Then
+        fld_DisableCtrl optCollectBy(0)
+        fld_DisableCtrl optCollectBy(1)
+        fld_DisableCtrl optCollectBy(2)
+        fld_DisableCtrl txtOther
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.SetControlLookAndFeel")
+End Sub
+
+Private Sub mReleaseControlServerControls()
+On Error GoTo ERR_SYSTEM
+'    If Not (mcsrvBillEndDay Is Nothing) Then
+'        mcsrvBillEndDay.Terminate
+'        Set mcsrvBillEndDay = Nothing
+'    End If
+'
+'    If Not (mcsrvBillStartDay Is Nothing) Then
+'        mcsrvBillStartDay.Terminate
+'        Set mcsrvBillStartDay = Nothing
+'    End If
+'
+'    If Not (mcsrvChrgStartDay Is Nothing) Then
+'        mcsrvChrgStartDay.Terminate
+'        Set mcsrvChrgStartDay = Nothing
+'    End If
+'
+'    If Not (mcsrvChrgEndDay Is Nothing) Then
+'        mcsrvChrgEndDay.Terminate
+'        Set mcsrvChrgEndDay = Nothing
+'    End If
+'
+'    If Not (mcsrvCommStartDt Is Nothing) Then
+'        mcsrvCommStartDt.Terminate
+'        Set mcsrvCommStartDt = Nothing
+'    End If
+'
+'    If Not (mcsrvNextBillDt Is Nothing) Then
+'        mcsrvNextBillDt.Terminate
+'        Set mcsrvNextBillDt = Nothing
+'    End If
+'
+'    If Not (mcsrvChrgAction Is Nothing) Then
+'        mcsrvChrgAction.Terminate
+'        Set mcsrvChrgAction = Nothing
+'    End If
+'
+    If Not (mcsrvChrgCcyCd Is Nothing) Then
+        Set mcsrvChrgCcyCd = Nothing
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mReleaseControlServerControls")
+End Sub
+
+Private Sub txtSkipReason_GotFocus()
+On Error GoTo ERR_SYSTEM
+    fld_GotFocus0 Me, (txtSkipReason.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtSkipReason_GotFocus")
+End Sub
+
+Private Sub txtSkipReason_LostFocus()
+On Error GoTo ERR_SYSTEM
+    fld_LostFocus0 Me, (txtSkipReason.Tag), PreValue, Initial_Color
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtSkipReason_LostFocus")
+End Sub
+
+Private Sub View_Multi1_Click(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    
+    Select Case Index
+        Case 0
+            Form_KeyDown1 FIRST_PAGE_KEY, FUNCTION_KEY
+        Case 1
+            Form_KeyDown1 PREV_PAGE_KEY, FUNCTION_KEY
+        Case 2
+            Form_KeyDown1 NEXT_PAGE_KEY, FUNCTION_KEY
+        Case 3
+            Form_KeyDown1 LAST_PAGE_KEY, FUNCTION_KEY
+        Case 4
+            Form_KeyDown1 INS_PAGE_KEY, FUNCTION_KEY
+        Case 5
+            Form_KeyDown1 DEL_PAGE_KEY, FUNCTION_KEY
+        Case 6
+            Form_KeyDown1 GRID_SHOW_KEY, FUNCTION_KEY
+    End Select
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.View_Multi1_Click", Index)
+End Sub
+
+Private Sub View_Multi2_Click(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    
+    Select Case Index
+        Case 0
+            Form_KeyDown2 FIRST_PAGE_KEY, FUNCTION_KEY
+        Case 1
+            Form_KeyDown2 PREV_PAGE_KEY, FUNCTION_KEY
+        Case 2
+            Form_KeyDown2 NEXT_PAGE_KEY, FUNCTION_KEY
+        Case 3
+            Form_KeyDown2 LAST_PAGE_KEY, FUNCTION_KEY
+        Case 4
+            Form_KeyDown2 INS_PAGE_KEY, FUNCTION_KEY
+        Case 5
+            Form_KeyDown2 DEL_PAGE_KEY, FUNCTION_KEY
+        Case 6
+            Form_KeyDown2 GRID_SHOW_KEY, FUNCTION_KEY
+    End Select
+    
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.View_Multi2_Click", Index)
+End Sub
+
+Private Sub View_Multi3_Click(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    
+    Select Case Index
+        Case 0
+            Form_KeyDown3 FIRST_PAGE_KEY, FUNCTION_KEY
+        Case 1
+            Form_KeyDown3 PREV_PAGE_KEY, FUNCTION_KEY
+        Case 2
+            Form_KeyDown3 NEXT_PAGE_KEY, FUNCTION_KEY
+        Case 3
+            Form_KeyDown3 LAST_PAGE_KEY, FUNCTION_KEY
+        Case 4
+            Form_KeyDown3 INS_PAGE_KEY, FUNCTION_KEY
+        Case 5
+            Form_KeyDown3 DEL_PAGE_KEY, FUNCTION_KEY
+        Case 6
+            Form_KeyDown3 GRID_SHOW_KEY, FUNCTION_KEY
+    End Select
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.View_Multi3_Click", Index)
+End Sub
+
+
+Private Sub View_Multi4_Click(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    
+    Select Case Index
+        Case 0
+            Form_KeyDown4 FIRST_PAGE_KEY, FUNCTION_KEY
+        Case 1
+            Form_KeyDown4 PREV_PAGE_KEY, FUNCTION_KEY
+        Case 2
+            Form_KeyDown4 NEXT_PAGE_KEY, FUNCTION_KEY
+        Case 3
+            Form_KeyDown4 LAST_PAGE_KEY, FUNCTION_KEY
+        Case 4
+            Form_KeyDown4 INS_PAGE_KEY, FUNCTION_KEY
+        Case 5
+            Form_KeyDown4 DEL_PAGE_KEY, FUNCTION_KEY
+        Case 6
+            Form_KeyDown4 GRID_SHOW_KEY, FUNCTION_KEY
+    End Select
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.View_Multi4_Click", Index)
+End Sub
+
+Private Sub Form_KeyDown1(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If Shift = FUNCTION_KEY Then
+        Select Case KeyCode
+            Case Else
+                frm_KeyDown0 Me, (multi_msg1.Tag), txt_multi1, KeyCode, frm_tg_Billing_Typ
+        End Select
+        
+        If ProdCat = "CIF" Then
+            'set filter for billing scheme recset
+            Call FilterBillRecSet
+            lblBillingDesc.Caption = TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_DESC")
+                    
+            frm_Load Me
+            
+            'disable enable control
+            If Not Is_Enq Then
+                mSetBillingSchmDisEnable
+                mSetChrgSchmDisEnable
+            End If
+        
+            If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+                'Call setAllCtrlState(Me, "Disable")
+                mDisableChrgSchmCtrl
+                mDisableBillSchmCtrl
+            End If
+            
+        End If
+        
+        'hidden default date (applicable for NLC, XLC and CIF)
+        Call HiddenDefaultDate
+        
+        'Change the charge action code to full name according to its value
+        Call SetChrgActCd(0)
+    
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown1", KeyCode, Shift)
+End Sub
+
+Private Sub Form_KeyDown2(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+
+    If Shift = FUNCTION_KEY Then
+        If ProdCat = "CIF" Then
+            'Do nothing if the action is delete and not level C
+            If KeyCode = DEL_PAGE_KEY And txtBillingLvl.Text <> CIF_LEVEL_VALUE Then
+                MsgBox "Only Customer Level record can be deleted", vbExclamation
+                Exit Sub
+            End If
+        ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            If (KeyCode = DEL_PAGE_KEY Or KeyCode = INS_PAGE_KEY) And txtBillingTyp.Text = "" Then
+                Exit Sub
+            End If
+            'Do nothing if the action is delete and not level C
+            If KeyCode = DEL_PAGE_KEY And txtBillingLvl.Text <> LC_LEVEL_VALUE Then
+                MsgBox "Only LC Level record can be deleted", vbExclamation
+                Exit Sub
+            End If
+        End If
+    
+        Select Case KeyCode
+        Case Else
+            frm_KeyDown0 Me, (multi_msg2.Tag), txt_multi2, KeyCode, frm_tg_Billing_Schm
+        End Select
+        
+        If ProdCat = "CIF" Then
+        
+            'set filter again
+            Call FilterBillRecSet
+            
+            frm_Load Me
+            
+            'set the recset dirty so that it can be save when nothing change
+            If KeyCode = INS_PAGE_KEY Then
+                If TransObj.Item("BILLING_SCHM_CIF").IsDirty = False Then
+                    TransObj.Item("BILLING_SCHM_CIF").SetDirty (True)
+                End If
+            End If
+            
+            'disable enable control
+            If Not Is_Enq Then
+                mSetBillingSchmDisEnable
+                mSetChrgSchmDisEnable
+            End If
+                      
+            If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+                'Call setAllCtrlState(Me, "Disable")
+                mDisableChrgSchmCtrl
+                mDisableBillSchmCtrl
+            End If
+            
+        End If
+        
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            If KeyCode = INS_PAGE_KEY Then
+                Call mSetNewBillingSchmDefault 'Set recset default values
+            ElseIf KeyCode = DEL_PAGE_KEY Then
+                'Reset the filter
+                mSetBillingSchmFilter True
+                'GetDispData
+                ' will then update the disable/enable below
+            End If
+            If KeyCode <> GRID_SHOW_KEY Then
+                'For key of <<, <, >, >>, + only
+                GetDispData  ' will then update the disable/enable
+                Call mSetBillingSchmDisEnable
+            End If
+            
+            'Finally set focus to Start day
+            If KeyCode = INS_PAGE_KEY Then Call gbSetFocusToControl(cboBillStartDay)
+            
+        End If
+        
+        'hidden default date (applicable for NLC, XLC and CIF)
+        Call HiddenDefaultDate
+        
+        'Change the charge action code to full name according to its value
+        Call SetChrgActCd(0)
+    
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown2", KeyCode, Shift)
+End Sub
+
+Private Sub Form_KeyDown3(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+
+Dim lsChrgBillTyp As String
+Dim lsChrgCd As String
+    
+    If Shift = FUNCTION_KEY Then
+        
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            
+            If KeyCode = DEL_PAGE_KEY Then
+                'Do nothing if the action is delete and the USER_DEFN_IND = 'S' as System generate Entry cannot be deleted
+                If TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("USER_DEFN_IND") = PRD_CHRG_SYS_GEN Then
+                    MsgBox "You cannot delete a system generated charge"
+                    Exit Sub
+                Else
+                    If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+                        lsChrgBillTyp = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("BILLING_TYP")
+                        lsChrgCd = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("CHRG_CD")
+                    Else
+                        lsChrgBillTyp = ""
+                        lsChrgCd = ""
+                    End If
+                End If
+            End If
+        End If
+                
+        Select Case KeyCode
+            Case Else
+                frm_KeyDown0 Me, (multi_msg3.Tag), txt_multi3, KeyCode, frm_tg_Bill_Chrg_Cd
+        End Select
+                
+        If ProdCat = "CIF" Then
+        
+            'set filter for billing scheme recset
+            Call FilterChrgRecSet
+            lblChrgCd.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("CHRG_DESC")
+            lblChrgBillingDesc.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("BILLING_DESC")
+            frm_Load Me
+            
+            'disable enable control
+            If Not Is_Enq Then
+                mSetChrgSchmDisEnable
+                mSetBillingSchmDisEnable
+            End If
+            
+            If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+                'Call setAllCtrlState(Me, "Disable")
+                mDisableChrgSchmCtrl
+                mDisableBillSchmCtrl
+            End If
+            
+        ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            
+            If KeyCode = INS_PAGE_KEY Then
+                mSetNewChrgDtlDefault True 'Set recset default values
+            ElseIf KeyCode = DEL_PAGE_KEY Then
+                If lsChrgBillTyp <> "" Then
+                    ClearUpBillSchm lsChrgBillTyp   'Clearup unuse
+                End If
+                If lsChrgCd <> "" Then
+                    ClearUpChrgSchm lsChrgCd, "" 'Clearup unuse
+                End If
+            End If
+                        
+            If KeyCode <> GRID_SHOW_KEY Then
+                'For key of <<, <, >, >>, + only
+                'Reset Label item
+                lblChrgCd.Caption = ""
+                lblChrgBillingDesc.Caption = ""
+                lblBillingDesc.Caption = ""
+                txtBillingTyp.Text = ""
+                
+                If KeyCode = DEL_PAGE_KEY Or KeyCode = INS_PAGE_KEY Then
+                    'Reset the filters
+                    mSetChrgSchmFilter True
+                    mSetBillingSchmFilter True
+                    GetDispData
+                    ' will then update the disable/enable below
+                End If
+                
+                Call mSetChrgSchmDisEnable
+                Call mSetBillingSchmDisEnable
+                ' to refresh all the label, billing scheme, chrg scheme image.
+                Call cboChrgCd_CloseUp
+            End If
+        End If
+        
+        'hidden default date (applicable for NLC, XLC and CIF)
+        Call HiddenDefaultDate
+        
+        'Change the charge action code to full name according to its value
+        Call SetChrgActCd(0)
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown3", KeyCode, Shift)
+End Sub
+
+Private Sub Form_KeyDown4(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+Dim sValue As String
+    If Shift = FUNCTION_KEY Then
+        
+        If ProdCat = "CIF" Then
+            'Do nothing if the action is delete and not level C
+            If KeyCode = DEL_PAGE_KEY And txtChrgLvl.Text <> CIF_LEVEL_VALUE Then
+                MsgBox "Only Customer Level record can be deleted", vbExclamation
+                Exit Sub
+            End If
+
+        ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            If (KeyCode = DEL_PAGE_KEY Or KeyCode = INS_PAGE_KEY) And txtChrgLvl.Text = "" Then
+                Exit Sub
+            End If
+        
+            'Do nothing if the action is delete and not level C
+            If KeyCode = DEL_PAGE_KEY And txtChrgLvl.Text <> LC_LEVEL_VALUE Then
+                MsgBox "Only LC Level record can be deleted", vbExclamation
+                Exit Sub
+            End If
+            'Call gbSetFocusToControl(cboChrgEndDay)
+        End If
+    
+        Select Case KeyCode
+            Case Else
+                frm_KeyDown0 Me, (multi_msg4.Tag), txt_multi4, KeyCode, frm_tg_Bill_Chrg_Schm
+        End Select
+    
+        If ProdCat = "CIF" Then
+            Call FilterChrgRecSet
+            
+            Dim llRet As Long
+            
+            'copy the ccy cd from any row
+            '---[EMEA]---[20060216]
+            If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+                If sValue <> "Y" Then
+                    llRet = TransObj.Item("BILL_CHRG_SCHM_CIF").SetAttr("CHRG_CCY_CD", TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttrAtRow(0, "CHRG_CCY_CD"), False)
+                End If
+            End If
+            '---[EMEA]---[END]
+           
+            frm_Load Me
+            
+            'disable enable control
+            If Not Is_Enq Then
+                mSetChrgSchmDisEnable
+                mSetBillingSchmDisEnable
+            End If
+            
+            If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+                'Call setAllCtrlState(Me, "Disable")
+                mDisableChrgSchmCtrl
+                mDisableBillSchmCtrl
+            End If
+            
+            'Finally set focus to Start day
+            If KeyCode = INS_PAGE_KEY Then Call gbSetFocusToControl(cboChrgStartDay)
+                                               
+        End If
+    
+        If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+            If KeyCode = INS_PAGE_KEY Then
+                Call mSetNewChrgSchmDefault 'Set recset default values
+            ElseIf KeyCode = DEL_PAGE_KEY Then
+                'Reset the filter
+                mSetChrgSchmFilter True
+                
+            End If
+            
+            If KeyCode <> GRID_SHOW_KEY Then
+                'For key of <<, <, >, >>, + only
+                GetDispData  ' will then update the disable/enable
+                Call mSetChrgSchmDisEnable
+            End If
+            
+            'Finally set focus to Start day
+            If KeyCode = INS_PAGE_KEY Then Call gbSetFocusToControl(cboChrgStartDay)
+        End If
+        
+        'hidden default date (applicable for NLC, XLC and CIF)
+        Call HiddenDefaultDate
+        
+        'Change the charge action code to full name according to its value
+        Call SetChrgActCd(0)
+        
+        
+        '----[Eddie Man]----[02SEP2005]
+        'GTS 3.0 Asia Requirement
+        If GetPUConfigValue(ProcUnit, "DISABLE_ANNUAL_BASIS", sValue) Then
+            If sValue = "Y" Then
+                fld_DisableCtrl optChrgSchmCal(0)
+                fld_DisableCtrl optChrgSchmCal(1)
+                fld_DisableCtrl optChrgSchmCal(2)
+            End If
+        End If
+        '----[Eddie Man]----[02SEP2005]
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown4", KeyCode, Shift)
+End Sub
+
+Private Sub FilterBillRecSet()
+On Error GoTo ERR_SYSTEM
+    If ProdCat = "CIF" Then
+        TransObj.Item("BILLING_SCHM_CIF").SetFilterKeys ("BILLING_TYP")
+        TransObj.Item("BILLING_SCHM_CIF").SetFilterValues TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_TYP")
+        TransObj.Item("BILLING_SCHM_CIF").Filter True
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.FilterBillRecSet")
+End Sub
+    
+Private Sub FilterChrgRecSet()
+On Error GoTo ERR_SYSTEM
+    If ProdCat = "CIF" Then
+        TransObj.Item("BILL_CHRG_SCHM_CIF").SetFilterKeys ("CHRG_CD")
+        TransObj.Item("BILL_CHRG_SCHM_CIF").SetFilterValues TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("CHRG_CD")
+        TransObj.Item("BILL_CHRG_SCHM_CIF").Filter True
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.FilterChrgRecSet")
+End Sub
+
+Public Sub AfterInitializeForm()
+On Error GoTo ERR_SYSTEM
+    If Is_Enq Then
+        'inactiate all [+] & [-] buttons
+        View_Multi1(4).Enabled = False
+        View_Multi1(5).Enabled = False
+        View_Multi2(4).Enabled = False
+        View_Multi2(5).Enabled = False
+        View_Multi3(4).Enabled = False
+        View_Multi3(5).Enabled = False
+        View_Multi4(4).Enabled = False
+        View_Multi4(5).Enabled = False
+    Else
+        If ProdCat = "CIF" Then
+            View_Multi1(4).Enabled = False
+            View_Multi1(5).Enabled = False
+            View_Multi3(4).Enabled = False
+            View_Multi3(5).Enabled = False
+            cboChrgCd.Enabled = False
+        End If
+        
+        txtBillingTyp.Enabled = False
+        txtBillingLvl.Enabled = False
+        txtChrgBillingTyp.Enabled = False
+        txtChrgLvl.Enabled = False
+    End If
+    
+    
+    'For CIF only -- Update the description field
+    If ProdCat = "CIF" Then
+        lblBillingDesc.Caption = TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_DESC")
+        lblChrgCd.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("CHRG_DESC")
+        lblChrgBillingDesc.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("BILLING_DESC")
+        Call FilterBillRecSet
+        Call FilterChrgRecSet
+    End If
+    
+    GetDispData
+    
+    If ProdCat = "CIF" Then
+        'disable enable control
+        If Not Is_Enq Then
+            mSetBillingSchmDisEnable
+            mSetChrgSchmDisEnable
+        End If
+
+    End If
+    
+    'Note, it is important to keep in mind that somehow the frm_load will reset the
+    ' colour of the disable field back to enable colour, so we must put disable cntrl
+    ' after the frm_load (inside GetDispData)
+    Call SetControlLookAndFeel
+    
+    'Change the charge action code to full name according to its value
+    Call SetChrgActCd(0)
+    
+    '----[Eddie Man]----[09SEP2005]
+    'GTS 3.0 Asia Requirement
+    Dim sValue As String
+    If GetPUConfigValue(ProcUnit, "DISABLE_ANNUAL_BASIS", sValue) Then
+        If sValue = "Y" Then
+            fld_DisableCtrl optChrgSchmCal(0)
+            fld_DisableCtrl optChrgSchmCal(1)
+            fld_DisableCtrl optChrgSchmCal(2)
+        End If
+    End If
+    '----[Eddie Man]----[09SEP2005]
+    
+    '---[EMEA]---[20060316]
+    ' Only set cboChrgCcyCd Field is Mandatory in LC Level
+    If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+       If sValue = "Y" Then
+            If ProdCat = "CIF" Then
+                fld_SetMandatory cboMinAmtCcy, "", "", IS_MANDATORY_FIELD
+            ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+                fld_SetMandatory cboMinAmtCcy, "", "", IS_MANDATORY_FIELD
+                'fld_SetMandatory cboChrgCcyCd, "", "", IS_MANDATORY_FIELD
+            End If
+        End If
+    End If
+    '---[EMEA]---[END]
+    
+    '----[Eddie Man]----[09NOV2005]
+    'GTS 3.0 Asia Requirement
+    Dim loRecSet As OGTRecordSet
+    Set loRecSet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+    If Not loRecSet Is Nothing Then
+        If GetPUConfigValue(ProcUnit, "BILL_CHRG_SCHM_DEF_TRAN_CCY", sValue) Then
+            If sValue = "Y" Then
+                    If loRecSet.RowCount <= 0 Then
+                        Exit Sub
+                    End If
+                    nCurrRow = loRecSet.CurrentRow
+                    If Not loRecSet Is Nothing Then
+                        With loRecSet
+                            If .RowCount > 0 Then
+                                .MoveFirst
+                                Do While Not .IsEOF
+                                    '---[EMEA]---[20060316]
+                                    If .GetAttr("CHRG_LVL") = LC_LEVEL_VALUE Then
+                                        llRet = .SetAttr("MIN_CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+                                        llRet = .SetAttr("CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+                                        llRet = .SetAttr("TIER_LMT_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+                                        cboMinAmtCcy = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+                                        cboChrgCcyCd = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+                                        Call mSetBaseYrDefault
+                                    End If
+                                    '---[EMEA]---[END]
+                                    .MoveNext
+                                Loop
+                            End If
+                        End With
+                    End If
+                    '---[EMEA]---[20060223]
+                    loRecSet.CurrentRow = nCurrRow
+                    '---[EMEA]---[END]
+            End If
+        End If
+    End If
+    '----[Eddie Man]----[09NOV2005]
+    
+    '---[EMEA]---[20060316]
+    Call GetDispData
+    Call HiddenDefaultDate
+    'Change the charge action code to full name according to its value
+    Call SetChrgActCd(0)
+    '---[EMEA]---[END]
+
+    If ProdType = "CIFASN" And TranType = "UPD" Then
+        Call setAllCtrlState(Me, "Disable")
+    End If
+    
+    If (ProdType = "CIFI" And TranType = "UPD") Then
+        Call setAllCtrlState(Me, "Disable")
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.AfterInitializeForm")
+End Sub
+
+Private Sub txtMinAmt_KeyPress(KeyAscii As Integer)
+On Error GoTo ERR_SYSTEM
+    'This is to reset the negative sign input (- ve)
+    If (KeyAscii = 45) Then
+        KeyAscii = 0
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtMinAmt_KeyPress", KeyAscii)
+End Sub
+
+Private Sub txtPrdNoMonth_KeyPress(KeyAscii As Integer)
+On Error GoTo ERR_SYSTEM
+    Dim mNumOfIntegral As Integer
+    Dim mNumOfDecPls As Integer
+    txtPrdNoMonth.Text = Trim(txtPrdNoMonth.Text)
+    mNumOfIntegral = 12
+    mNumOfDecPls = 0
+    KeyAscii = gNumericKey(KeyAscii, "", mNumOfIntegral, mNumOfDecPls)
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtPrdNoMonth_KeyPress", KeyAscii)
+End Sub
+
+Private Sub mValidateBillSchm()
+On Error GoTo ERR_SYSTEM
+    Dim lbret As Boolean
+    Dim lbEmpty As Boolean
+    
+    '1) Check same start dates
+        lbret = mSameBillSchmStDt(lbEmpty)
+        If lbret Then 'Scheme with same start date is detected
+            If lbEmpty Then
+                MsgBox "More than One Scheme with default start date"
+            Else
+                MsgBox "More than One Scheme with the same start date"
+            End If
+            Call gbSetFocusToControl(cboBillStartDay)
+        End If
+        
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mValidateBillSchm")
+End Sub
+
+Private Function mSameBillSchmStDt(ByRef pbEmptyDt As Boolean)
+On Error GoTo ERR_SYSTEM
+
+Dim loRecSet As OGTRecordSet
+Dim llRowCnt As Long
+Dim llCnt As Long
+Dim llCurr As Long
+Dim ldtCurrSt As Date
+
+    mSameBillSchmStDt = False
+    pbEmptyDt = False
+    
+    Set loRecSet = TransObj.Item(GT_RS_BILLING_SCHM)
+    If Not loRecSet Is Nothing Then
+        llRowCnt = loRecSet.RowCount
+        If llRowCnt > 0 Then
+            llCurr = loRecSet.CurrentRow
+            ldtCurrSt = loRecSet.GetAttr("EFF_FROM_DT")
+            
+            If DateDiff("d", ldtCurrSt, EMPTY_DT) = 0 Then pbEmptyDt = True
+    
+            For llCnt = 0 To llRowCnt - 1
+                If llCnt <> llCurr Then
+                    loRecSet.CurrentRow = llCnt
+                    If DateDiff("d", ldtCurrSt, loRecSet.GetAttr("EFF_FROM_DT")) = 0 _
+                          And loRecSet.GetAttr("BILLING_LVL") = LC_LEVEL_VALUE Then
+                            
+                        mSameBillSchmStDt = True
+                        Exit For
+                    End If
+                End If
+            Next
+            loRecSet.CurrentRow = llCurr
+        End If
+    End If
+    Exit Function
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSameBillSchmStDt", pbEmptyDt)
+End Function
+
+Private Function mSameChrgSchmStDt(ByRef pbEmptyDt As Boolean)
+On Error GoTo ERR_SYSTEM
+
+Dim loRecSet As OGTRecordSet
+Dim llRowCnt As Long
+Dim llCnt As Long
+Dim llCurr As Long
+Dim ldtCurrSt As Date
+
+    mSameChrgSchmStDt = False
+    pbEmptyDt = False
+    
+    If ProdCat = "CIF" Then
+        Set loRecSet = TransObj.Item("BILL_CHRG_SCHM_CIF")
+    Else
+        Set loRecSet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+    End If
+    
+    If Not loRecSet Is Nothing Then
+        llRowCnt = loRecSet.RowCount
+        llCurr = loRecSet.CurrentRow
+        ldtCurrSt = loRecSet.GetAttr("EFF_FROM_DT")
+        
+        If DateDiff("d", ldtCurrSt, EMPTY_DT) = 0 Then pbEmptyDt = True
+
+        For llCnt = 0 To llRowCnt - 1
+            If llCnt <> llCurr Then
+                loRecSet.CurrentRow = llCnt
+                
+                If ProdCat = "CIF" Then
+                    'Prompt error only when extra record's start date is blank for CIF
+                    If DateDiff("d", ldtCurrSt, loRecSet.GetAttr("EFF_FROM_DT")) = 0 _
+                          And loRecSet.GetAttr("CHRG_LVL") = CIF_LEVEL_VALUE And cboChrgStartDay.Text = "" Then
+                            
+                        mSameChrgSchmStDt = True
+                        Exit For
+                    End If
+                Else
+                    If DateDiff("d", ldtCurrSt, loRecSet.GetAttr("EFF_FROM_DT")) = 0 _
+                          And loRecSet.GetAttr("CHRG_LVL") = LC_LEVEL_VALUE Then
+                            
+                        mSameChrgSchmStDt = True
+                        Exit For
+                    End If
+                End If
+            End If
+        Next
+        loRecSet.CurrentRow = llCurr
+    End If
+
+    Exit Function
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSameChrgSchmStDt", pbEmptyDt)
+End Function
+
+Private Sub mValidateChrgSchm()
+On Error GoTo ERR_SYSTEM
+Dim lbret As Boolean
+Dim lbEmpty As Boolean
+    
+    '1) Check same start dates
+    lbret = mSameChrgSchmStDt(lbEmpty)
+    If lbret Then 'Scheme with same start date is detected
+        If lbEmpty Then
+            MsgBox "More than One Scheme with default start date"
+        Else
+            MsgBox "More than One Scheme with the same start date"
+        End If
+        Call gbSetFocusToControl(cboChrgStartDay)
+    End If
+        
+    '2) Check End date < start date
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mValidateChrgSchm")
+End Sub
+
+Private Sub HiddenDefaultDate()
+On Error GoTo ERR_SYSTEM
+
+    Dim cmpdate As Date         'hidden the default date
+    
+    cmpdate = MAX_DT
+        
+    If cboChrgEndDay <> "" Then
+        If DateDiff("d", cboChrgEndDay, cmpdate) = 0 Then
+            cboChrgEndDay = ""
+        End If
+    End If
+            
+    If cboBillEndDay <> "" Then
+        If DateDiff("d", cboBillEndDay, cmpdate) = 0 Then
+            cboBillEndDay = ""
+        End If
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.HiddenDefaultDate")
+End Sub
+
+Private Sub HandleMultiChange()
+On Error GoTo ERR_SYSTEM
+    lblBillingDesc.Caption = TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_DESC")
+    lblChrgCd.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("CHRG_DESC")
+    lblChrgBillingDesc.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("BILLING_DESC")
+
+    'disable enable control
+    If Not Is_Enq Then
+        mSetBillingSchmDisEnable
+        mSetChrgSchmDisEnable
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.HandleMultiChange")
+End Sub
+
+
+Private Sub SetChrgActCd(ByVal Mode As Integer)
+Debug.Print "SetChrgActCd"
+On Error GoTo ERR_SYSTEM
+    'Change to long name
+    If Mode = 0 Then
+        If cboChrgAction.Text = CHRG_ACT_CD_TAKE Then
+            cboChrgAction.Text = CHRG_ACT_TAKE
+        ElseIf cboChrgAction.Text = CHRG_ACT_CD_WAIVE Then
+            cboChrgAction.Text = CHRG_ACT_WAIVE
+        ElseIf cboChrgAction.Text = CHRG_ACT_CD_REFER Then
+            cboChrgAction.Text = CHRG_ACT_REFER
+        End If
+    'Change to short name
+    ElseIf Mode = 1 Then
+        If cboChrgAction.Text = CHRG_ACT_TAKE Then
+            cboChrgAction.Text = CHRG_ACT_CD_TAKE
+        ElseIf cboChrgAction.Text = CHRG_ACT_WAIVE Then
+            cboChrgAction.Text = CHRG_ACT_CD_WAIVE
+        ElseIf cboChrgAction.Text = CHRG_ACT_REFER Then
+            cboChrgAction.Text = CHRG_ACT_CD_REFER
+        End If
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.SetChrgActCd")
+End Sub
+
+
+Private Sub cboChrgCcyCd_CloseUp()
+On Error GoTo ERR_SYSTEM
+
+    With mcsrvChrgCcyCd
+        .Validate
+    End With
+
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_CloseUp")
+End Sub
+Private Sub cboChrgCcyCd_DropDown()
+On Error GoTo ERR_SYSTEM
+
+    With mcsrvChrgCcyCd
+        If .Initialized = False Then
+            .Initialize
+            .Populate
+        End If
+    End With
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_DropDown")
+End Sub
+
+Private Sub cboChrgCcyCd_GotFocus()
+On Error GoTo ERR_SYSTEM
+
+    fld_GotFocus0 Me, (cboChrgCcyCd.Tag), PreValue, Initial_Color
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_GotFocus")
+End Sub
+Private Sub cboChrgCcyCd_LostFocus()
+On Error GoTo ERR_SYSTEM
+    Dim sValue As String
+    
+    fld_LostFocus0 Me, (cboChrgCcyCd.Tag), PreValue, Initial_Color
+    
+    '---[EMEA]---[20060606]
+    If Get_Error_Status() = FLD_INPUT_OK And cboChrgCcyCd.Text <> "" Then
+        If GetPUConfigValue(ProcUnit, "IS_ANNUAL_BASIS_DEPEND_CCY", sValue) Then
+            If sValue = "Y" Then
+                Call mSetBaseYrDefault
+                MsgBox "Annual Basis is reset", vbExclamation
+            End If
+        End If
+    End If
+    '---[EMEA]---[END]
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_LostFocus")
+End Sub
+Private Sub cboChrgCcyCd_UnboundReadData(ByVal RowBuf As ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+
+    mcsrvChrgCcyCd.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub
+Private Sub cboChrgCcyCd_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+
+    ReDim validList(0) As Control
+    ReDim valuelist(0) As Value_Type
+
+    With mcsrvChrgCcyCd
+        If .Initialized = False Then
+            .Initialize
+            .Populate
+        End If
+    End With
+    
+    Set validList(0) = cboChrgCcyCd
+    RtnPassed = Validate_On_List(Me, "Currency", "CCY_CD", Text, validList(), valuelist(), CLR_IF_NOT_FOUND)
+    Erase validList
+    Erase valuelist
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_ValidateList", Text, RtnPassed)
+End Sub
+
+
+Private Sub cboMinAmtCcy_CloseUp()
+On Error GoTo ERR_SYSTEM
+
+    With mcsrvMinChrgCcyCd
+        .Validate
+    End With
+
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboMinAmtCcy_CloseUp")
+End Sub
+Private Sub cboMinAmtCcy_DropDown()
+On Error GoTo ERR_SYSTEM
+
+    With mcsrvMinChrgCcyCd
+        If .Initialized = False Then
+            .Initialize
+            .Populate
+        End If
+    End With
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboMinAmtCcy_DropDown")
+End Sub
+
+Private Sub cboMinAmtCcy_GotFocus()
+On Error GoTo ERR_SYSTEM
+
+    fld_GotFocus0 Me, (cboMinAmtCcy.Tag), PreValue, Initial_Color
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_GotFocus")
+End Sub
+Private Sub cboMinAmtCcy_LostFocus()
+On Error GoTo ERR_SYSTEM
+    Dim sValue As String
+    
+    fld_LostFocus0 Me, (cboMinAmtCcy.Tag), PreValue, Initial_Color
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboMinAmtCcy_LostFocus")
+End Sub
+Private Sub cboMinAmtCcy_UnboundReadData(ByVal RowBuf As ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+
+    mcsrvMinChrgCcyCd.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboMinAmtCcy_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub
+Private Sub cboMinAmtCcy_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+
+    ReDim validList(0) As Control
+    ReDim valuelist(0) As Value_Type
+
+    With mcsrvMinChrgCcyCd
+        If .Initialized = False Then
+            .Initialize
+            .Populate
+        End If
+    End With
+    
+    Set validList(0) = cboMinAmtCcy
+    RtnPassed = Validate_On_List(Me, "Currency", "CCY_CD", Text, validList(), valuelist(), CLR_IF_NOT_FOUND)
+    Erase validList
+    Erase valuelist
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboMinAmtCcy_ValidateList", Text, RtnPassed)
+End Sub
+
+Private Sub mSetBaseYrDefault()
+On Error GoTo ERR_SYSTEM
+Dim DBResult As Object
+Dim retcode As Long
+Dim sValue As String
+Dim lsSql As String
+Dim strBaseYr As String
+Dim rsChrgSchm As OGTRecordSet
+
+    If GetPUConfigValue(ProcUnit, "IS_ANNUAL_BASIS_DEPEND_CCY", sValue) Then
+        If sValue = "Y" Then
+               
+            If ProdCat = "CIF" Then
+                Set rsChrgSchm = TransObj.Item("BILL_CHRG_SCHM_CIF")
+            ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+                Set rsChrgSchm = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+            End If
+            'Get the Parent LC_TRAN_NBR and Parent TRADE_CHANNEL_STOP_IND in LC_SYS_CNTRL
+            lsSql = "select BASE_YR " _
+                    & " from GTDMAST1..CCY" _
+                    & " where CCY_CD = '" & rsChrgSchm.GetAttr("CHRG_CCY_CD") & "'" _
+                    & " and STATUS = 'A'"
+            ConnectObj.SQL = lsSql
+            retcode = ConnectObj.ExecSQL()
+            Set DBResult = ConnectObj.GetResult()
+            If DBResult.RowCount > 0 Then
+                If Not IsNull(DBResult.Attr("BASE_YR")) Then
+                    strBaseYr = DBResult.Attr("BASE_YR")
+                    retcode = rsChrgSchm.SetAttr("BASE_YR", strBaseYr, False)
+                End If
+            End If
+        End If
+    End If
+    
+    Set DBResult = Nothing
+    
+    Call GetDispData
+    Call HiddenDefaultDate
+    'Change the charge action code to full name according to its value
+    Call SetChrgActCd(0)
+    '---[EMEA]---[END]
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetBaseYrDefault", pbNewRow)
+End Sub
+
+Private Sub mSetSkipAmortAccuralDisEnable()
+On Error GoTo ERR_SYSTEM
+    
+    If cboSkip.Text <> "N" Then
+        If Not Is_Enq Then
+            If TranType = GT_TTY_FIN_ADJ Then
+                fld_EnableCtrl txtSkipReason
+                fld_SetMandatory txtSkipReason, "", "", IS_MANDATORY_FIELD
+            Else
+                fld_SetMandatory txtSkipReason, "", "", NOT_MANDATORY_FIELD
+                fld_DisableCtrl txtSkipReason
+            End If
+        Else
+            fld_DisableCtrl txtSkipReason
+        End If
+    Else
+        If Not Is_Enq Then
+            If Not FormLoading Then
+                txtSkipReason.Text = ""
+                llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("SKIP_ACCR_AMORTN_REASON", "", False)
+            End If
+            fld_SetMandatory txtSkipReason, "", "", NOT_MANDATORY_FIELD
+            fld_DisableCtrl txtSkipReason
+        Else
+            fld_DisableCtrl txtSkipReason
+        End If
+    End If
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetSkipAmortAccuralDisEnable")
+End Sub
+

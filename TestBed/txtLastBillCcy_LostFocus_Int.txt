@@ -1,0 +1,7 @@
+Private Sub txtLastBillCcy_LostFocus()
+On Error GoTo ERR_SYSTEM
+fld_LostFocus0 Me, (txtLastBillCcy.Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtLastBillCcy_LostFocus")
+End Sub

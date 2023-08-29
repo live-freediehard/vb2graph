@@ -1,0 +1,9 @@
+Private Sub txtMinAmt_KeyPress(KeyAscii As Integer)
+On Error GoTo ERR_SYSTEM
+If (KeyAscii = 45) Then
+KeyAscii = 0
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtMinAmt_KeyPress", KeyAscii)
+End Sub

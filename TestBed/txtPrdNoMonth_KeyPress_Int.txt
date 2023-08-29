@@ -1,0 +1,12 @@
+Private Sub txtPrdNoMonth_KeyPress(KeyAscii As Integer)
+On Error GoTo ERR_SYSTEM
+Dim mNumOfIntegral As Integer
+Dim mNumOfDecPls As Integer
+txtPrdNoMonth.Text = Trim(txtPrdNoMonth.Text)
+mNumOfIntegral = 12
+mNumOfDecPls = 0
+KeyAscii = gNumericKey(KeyAscii, "", mNumOfIntegral, mNumOfDecPls)
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtPrdNoMonth_KeyPress", KeyAscii)
+End Sub

@@ -1,0 +1,7 @@
+Private Sub optPrdWhen_Click(Index As Integer, Value As Integer)
+On Error GoTo ERR_SYSTEM
+fld_SetAttr0 Me, (optPrdWhen(Index).Tag), PreValue
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.optPrdWhen_Click", Index, Value)
+End Sub

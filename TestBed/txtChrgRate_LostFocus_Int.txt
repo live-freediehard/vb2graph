@@ -1,0 +1,10 @@
+Private Sub txtChrgRate_LostFocus()
+On Error GoTo ERR_SYSTEM
+fld_LostFocus0 Me, (txtChrgRate.Tag), PreValue, Initial_Color
+If txtChrgRate.Text = "" Then
+txtChrgRate.Text = 0
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtChrgRate_LostFocus")
+End Sub

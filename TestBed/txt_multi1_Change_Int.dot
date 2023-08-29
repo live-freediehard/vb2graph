@@ -1,0 +1,17 @@
+digraph G{
+Node_1 [ label ="Private Sub txt_multi1_Change()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_3 [ label ="Call FilterBillRecSet\nCall FilterChrgRecSet",shape="box"];
+Node_4 [ label ="endif\nfrm_GetDataOnly Me",shape="box"];
+Node_5 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_6 [ label ="Call HandleMultiChange",shape="box"];
+Node_7 [ label ="endif\nCall HiddenDefaultDate\nCall SetChrgActCd(0)\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.txt_multi1_Change')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+Node_5 -> Node_6 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5;
+Node_5 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+}

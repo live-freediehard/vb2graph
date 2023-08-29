@@ -1,0 +1,22 @@
+Private Sub View_Multi1_Click(Index As Integer)
+On Error GoTo ERR_SYSTEM
+Select Case Index
+Case 0
+Form_KeyDown1 FIRST_PAGE_KEY, FUNCTION_KEY
+Case 1
+Form_KeyDown1 PREV_PAGE_KEY, FUNCTION_KEY
+Case 2
+Form_KeyDown1 NEXT_PAGE_KEY, FUNCTION_KEY
+Case 3
+Form_KeyDown1 LAST_PAGE_KEY, FUNCTION_KEY
+Case 4
+Form_KeyDown1 INS_PAGE_KEY, FUNCTION_KEY
+Case 5
+Form_KeyDown1 DEL_PAGE_KEY, FUNCTION_KEY
+Case 6
+Form_KeyDown1 GRID_SHOW_KEY, FUNCTION_KEY
+End Select
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.View_Multi1_Click", Index)
+End Sub

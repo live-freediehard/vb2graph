@@ -1,0 +1,186 @@
+Private Sub SetControlLookAndFeel()
+On Error GoTo ERR_SYSTEM
+Dim strPurpCd As String
+Dim strCfrmnInd As String
+Dim lsLiabId As String
+Dim lsCommColByInd As String
+Dim lsOtherDtl As String
+Dim sValue As String
+strPurpCd = ""
+strCfrmnInd = ""
+If Not TransObj.Item(GT_RS_LC_CTRY_EXT) Is Nothing Then
+If Not IsNull(TransObj.Item(GT_RS_LC_CTRY_EXT).GetAttr("PURP_CD")) Then
+strPurpCd = TransObj.Item(GT_RS_LC_CTRY_EXT).GetAttr("PURP_CD")
+endif
+endif
+If Not TransObj.Item(GT_RS_LC_DTL) Is Nothing Then
+If Not IsNull(TransObj.Item(GT_RS_LC_DTL).GetAttr("CFRMN_IND")) Then
+strCfrmnInd = TransObj.Item(GT_RS_LC_DTL).GetAttr("CFRMN_IND")
+endif
+endif
+If Not ProdCat = "CIF" Then
+If ((ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC) And strPurpCd <> "") Then
+Call gbSetControlsEnableInContainer(Frame1, True)
+Call gbSetControlsEnableInContainer(Frame7, True)
+Call gbSetControlsEnableInContainer(Frame3, True)
+Call gbSetControlsEnableInContainer(Frame4, True)
+Call gbSetControlsEnableInContainer(Frame2, True)
+Call gbSetControlsEnableInContainer(FraCalendar, True)
+Call gbSetControlsEnableInContainer(FraPeriodic, True)
+Call gbSetControlsEnableInContainer(SSPanel1, True)
+Call gbSetControlsEnableInContainer(fraChrgCd, True)
+Call gbSetControlsEnableInContainer(fraChrgSchm, True)
+Call gbSetControlsEnableInContainer(Frame6, True)
+Call gbSetControlsEnableInContainer(SSPanel5, True)
+Call gbSetControlsEnableInContainer(SSPanel3, True)
+fld_DisableCtrl View_Multi3(0)
+fld_DisableCtrl View_Multi3(1)
+fld_DisableCtrl View_Multi3(2)
+fld_DisableCtrl View_Multi3(3)
+fld_DisableCtrl View_Multi3(4)
+fld_DisableCtrl View_Multi3(5)
+fld_DisableCtrl txtBillingLvl
+fld_DisableCtrl txtChrgBillingTyp
+fld_DisableCtrl txtAmortAmt
+fld_DisableCtrl txtAccrualAmt
+fld_DisableCtrl txtLastBillAmt
+fld_DisableCtrl cboLastBillDt
+fld_DisableCtrl txtBillingTyp
+fld_DisableCtrl lblBillingDesc
+fld_DisableCtrl lblChrgCd
+fld_DisableCtrl lblChrgBillingDesc
+fld_DisableCtrl txtChrgLvl
+fld_DisableCtrl cboChrgCd
+If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+If sValue <> "Y" Then
+fld_DisableCtrl cboChrgCcyCd
+fld_DisableCtrl cboMinAmtCcy
+endif
+endif
+Else
+Call gbSetControlsEnableInContainer(Frame1, False)
+Call gbSetControlsEnableInContainer(Frame7, False)
+Call gbSetControlsEnableInContainer(Frame3, False)
+Call gbSetControlsEnableInContainer(Frame4, False)
+Call gbSetControlsEnableInContainer(Frame2, False)
+Call gbSetControlsEnableInContainer(FraCalendar, False)
+Call gbSetControlsEnableInContainer(FraPeriodic, False)
+Call gbSetControlsEnableInContainer(SSPanel1, False)
+Call gbSetControlsEnableInContainer(fraChrgCd, False)
+Call gbSetControlsEnableInContainer(fraChrgSchm, False)
+Call gbSetControlsEnableInContainer(Frame6, False)
+Call gbSetControlsEnableInContainer(SSPanel5, False)
+Call gbSetControlsEnableInContainer(SSPanel3, False)
+endif
+endif
+If ProdCat = "CIF" Then
+lblSkip.Visible = False
+lblSkipReason.Visible = False
+lblAmortAmt.Visible = False
+lblAccrualAmt.Visible = False
+lblCommStartDt.Visible = False
+lblLastBillAmt.Visible = False
+lblLastBillDt.Visible = False
+lblNextBillDt.Visible = False
+txtAmortCcy.Visible = False
+txtAccrualCcy.Visible = False
+txtLastBillCcy.Visible = False
+cboSkip.Visible = False
+txtSkipReason.Visible = False
+txtAmortAmt.Visible = False
+txtLastBillAmt.Visible = False
+cboLastBillDt.Visible = False
+txtAccrualAmt.Visible = False
+cboCommStartDt.Visible = False
+cboNextBillDt.Visible = False
+GetCommColByInd lsLiabId, lsCommColByInd, lsOtherDtl
+If lsCommColByInd = "O" Or lsCommColByInd = "M" Then
+fld_EnableCtrl txtOther
+Else
+fld_DisableCtrl txtOther
+endif
+fraChrgSchm.Top = 1200
+fraChrgCd.Height = 4900
+fraChrgCd.Top = 1440
+SSPanel3.Top = 4320
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+lblSkip.Visible = True
+lblSkipReason.Visible = True
+lblAmortAmt.Visible = True
+lblAccrualAmt.Visible = True
+lblCommStartDt.Visible = True
+lblLastBillAmt.Visible = True
+lblLastBillDt.Visible = True
+lblNextBillDt.Visible = True
+txtAmortCcy.Visible = True
+txtAccrualCcy.Visible = True
+txtLastBillCcy.Visible = True
+cboSkip.Visible = True
+txtSkipReason.Visible = True
+txtAmortAmt.Visible = True
+txtLastBillAmt.Visible = True
+cboLastBillDt.Visible = True
+txtAccrualAmt.Visible = True
+cboCommStartDt.Visible = True
+cboNextBillDt.Visible = True
+lblTradeRev.Visible = False
+chkTradeRevPanel.Visible = False
+fld_DisableCtrl txtAmortCcy
+fld_DisableCtrl txtAccrualCcy
+fld_DisableCtrl txtLastBillCcy
+fld_DisableCtrl cboMinAmtCcy
+fld_DisableCtrl txtOther
+fld_DisableCtrl Panel3D1
+Panel3D1.Visible = False
+mSetChrgDtlDisEnable
+If (strPurpCd <> "") And TransObj.Item(GT_RS_LC_SYS_CNTRL).GetAttr("DUMMY_TYP") <> "P" Then
+If (TranType = GT_TTY_ISSUANCE Or TranType = GT_TTY_ADVISING _
+Or TranType = GT_TTY_AMENDMENT Or TranType = GT_TTY_FIN_ADJ) Then
+fld_EnableCtrl optCollectBy(0)
+fld_EnableCtrl optCollectBy(1)
+fld_EnableCtrl optCollectBy(2)
+If TransObj.Item(GT_RS_TP_LIAB_PTY).RowCount = 1 Then
+lsLiabId = TransObj.Item(GT_RS_TP_LIAB_PTY).GetAttr("BKG_PTY_ID")
+Else
+lsLiabId = ""
+endif
+GetCommColByInd lsLiabId, lsCommColByInd, lsOtherDtl
+If lsCommColByInd <> "T" Then
+fld_EnableCtrl txtOther
+endif
+endif
+Else
+fld_DisableCtrl optCollectBy(0)
+fld_DisableCtrl optCollectBy(1)
+fld_DisableCtrl optCollectBy(2)
+fld_DisableCtrl txtOther
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If Not Is_Enq Then
+If TranType = GT_TTY_FIN_ADJ Then
+fld_EnableCtrl cboSkip
+If cboSkip.Text <> "N" Then
+fld_EnableCtrl txtSkipReason
+endif
+Else
+fld_DisableCtrl cboSkip
+fld_DisableCtrl txtSkipReason
+endif
+Else
+fld_DisableCtrl txtSkipReason
+endif
+endif
+Call cboChrgCd_CloseUp
+Call cboChrgCd_LostFocus
+endif
+Call HiddenDefaultDate
+If Is_Enq Then
+fld_DisableCtrl optCollectBy(0)
+fld_DisableCtrl optCollectBy(1)
+fld_DisableCtrl optCollectBy(2)
+fld_DisableCtrl txtOther
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.SetControlLookAndFeel")
+End Sub

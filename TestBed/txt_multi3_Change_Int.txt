@@ -1,0 +1,16 @@
+Private Sub txt_multi3_Change()
+On Error GoTo ERR_SYSTEM
+If ProdCat = "CIF" Then
+Call FilterBillRecSet
+Call FilterChrgRecSet
+endif
+frm_GetDataOnly Me
+If ProdCat = "CIF" Then
+Call HandleMultiChange
+endif
+Call HiddenDefaultDate
+Call SetChrgActCd(0)
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txt_multi3_Change")
+End Sub

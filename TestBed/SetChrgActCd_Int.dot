@@ -1,0 +1,32 @@
+digraph G{
+Node_1 [ label ="Private Sub SetChrgActCd(ByVal Mode As Integer)\nDebug.Print 'SetChrgActCd'\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="Mode = 0  ?",shape="diamond"];
+Node_3 [ label ="cboChrgAction.Text = CHRG_ACT_CD_TAKE  ?",shape="diamond"];
+Node_4 [ label ="cboChrgAction.Text = CHRG_ACT_TAKE",shape="box"];
+Node_5 [ label =" Check ? :  cboChrgAction.Text = CHRG_ACT_CD_WAIVE Then\ncboChrgAction.Text = CHRG_ACT_WAIVE",shape="box"];
+Node_6 [ label =" Check ? :  cboChrgAction.Text = CHRG_ACT_CD_REFER Then\ncboChrgAction.Text = CHRG_ACT_REFER",shape="box"];
+Node_7 [ label ="endif",shape="box"];
+Node_8 [ label ="Check ? :  Mode = 1  ?\n cboChrgAction.Text = CHRG_ACT_TAKE  ?",shape="diamond"];
+Node_9 [ label ="cboChrgAction.Text = CHRG_ACT_CD_TAKE",shape="box"];
+Node_10 [ label =" Check ? :  cboChrgAction.Text = CHRG_ACT_WAIVE Then\ncboChrgAction.Text = CHRG_ACT_CD_WAIVE",shape="box"];
+Node_11 [ label =" Check ? :  cboChrgAction.Text = CHRG_ACT_REFER Then\ncboChrgAction.Text = CHRG_ACT_CD_REFER",shape="box"];
+Node_12 [ label ="endif",shape="box"];
+Node_13 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.SetChrgActCd')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_5 [label="False",fontcolor="RED"];
+Node_3 -> Node_6 [label="False",fontcolor="RED"];
+Node_4 -> Node_7;
+Node_5 -> Node_7;
+Node_6 -> Node_7;
+Node_2 -> Node_8 [label="False",fontcolor="RED"];
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_7 -> Node_8;
+Node_8 -> Node_10 [label="False",fontcolor="RED"];
+Node_8 -> Node_11 [label="False",fontcolor="RED"];
+Node_9 -> Node_12;
+Node_10 -> Node_12;
+Node_11 -> Node_12;
+Node_12 -> Node_13;
+}

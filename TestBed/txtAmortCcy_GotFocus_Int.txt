@@ -1,0 +1,7 @@
+Private Sub txtAmortCcy_GotFocus()
+On Error GoTo ERR_SYSTEM
+fld_GotFocus0 Me, (txtAmortCcy.Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.txtAmortCcy_GotFocus")
+End Sub
