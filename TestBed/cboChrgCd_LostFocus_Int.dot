@@ -1,0 +1,29 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgCd_LostFocus()\nOn Error GoTo ERR_SYSTEM\nDim llCurrRow As Long\nDim llRet As Long\nDim ldtCCTD As Date\nfld_LostFocus0 Me, (cboChrgCd.Tag), PreValue, Initial_Color",shape="box"];
+Node_2 [ label ="ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC  ?",shape="diamond"];
+Node_3 [ label ="cboChrgCd.Text = ''  ?",shape="diamond"];
+Node_4 [ label ="txtChrgBillingTyp.Text = ''\nllRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr('BILLING_TYP', '', False)\nlblChrgCd.Caption = ''\nlblChrgBillingDesc.Caption = ''\ntxtBillingTyp.Text = ''\nlblBillingDesc.Caption = ''",shape="box"];
+Node_5 [ label ="endif\nmSetChrgSchmFilter False\nmSetBillingSchmFilter False\nGetDispData",shape="box"];
+Node_6 [ label ="mobjChrgCdComboSQL.Validate  ?",shape="diamond"];
+Node_7 [ label ="mobjChrgCdComboSQL.UpdateLinkedControls\nldtCCTD = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr('COMM_COL_TILL_DT')",shape="box"];
+Node_8 [ label ="DateDiff('d', ldtCCTD, EMPTY_DT) = 0  ?",shape="diamond"];
+Node_9 [ label ="mSetNewChrgDtlDefault False",shape="box"];
+Node_10 [ label ="endif",shape="box"];
+Node_11 [ label ="endif\nmSetChrgSchmDisEnable ' To set the disable/enable properties regarding the charge level\nmSetBillingSchmDisEnable ' To set the disable/enable properties regarding the billing level\nCall SetChrgActCd(0)",shape="box"];
+Node_12 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgCd_LostFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_5 [label="FALSE",fontcolor="RED"];
+Node_4 -> Node_5;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_7 -> Node_8;
+Node_8 -> Node_10 [label="FALSE",fontcolor="RED"];
+Node_9 -> Node_10;
+Node_6 -> Node_11 [label="FALSE",fontcolor="RED"];
+Node_10 -> Node_11;
+Node_2 -> Node_12 [label="FALSE",fontcolor="RED"];
+Node_11 -> Node_12;
+}

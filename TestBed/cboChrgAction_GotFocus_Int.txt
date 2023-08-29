@@ -1,0 +1,7 @@
+Private Sub cboChrgAction_GotFocus()
+On Error GoTo ERR_SYSTEM
+fld_GotFocus0 Me, (cboChrgAction.Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgAction_GotFocus")
+End Sub

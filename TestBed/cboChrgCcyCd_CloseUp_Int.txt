@@ -1,0 +1,9 @@
+Private Sub cboChrgCcyCd_CloseUp()
+On Error GoTo ERR_SYSTEM
+With mcsrvChrgCcyCd
+.Validate
+End With
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_CloseUp")
+End Sub

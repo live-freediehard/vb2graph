@@ -1,0 +1,20 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgCcyCd_LostFocus()\nOn Error GoTo ERR_SYSTEM\nDim sValue As String\nfld_LostFocus0 Me, (cboChrgCcyCd.Tag), PreValue, Initial_Color",shape="box"];
+Node_2 [ label ="Get_Error_Status() = FLD_INPUT_OK And cboChrgCcyCd.Text <> ''  ?",shape="diamond"];
+Node_3 [ label ="GetPUConfigValue(ProcUnit, 'IS_ANNUAL_BASIS_DEPEND_CCY', sValue)  ?",shape="diamond"];
+Node_4 [ label ="sValue = 'Y'  ?",shape="diamond"];
+Node_5 [ label ="Call mSetBaseYrDefault\nMsgBox 'Annual Basis is reset', vbExclamation",shape="box"];
+Node_6 [ label ="endif",shape="box"];
+Node_7 [ label ="endif",shape="box"];
+Node_8 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgCcyCd_LostFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_6 [label="FALSE",fontcolor="RED"];
+Node_5 -> Node_6;
+Node_3 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+Node_2 -> Node_8 [label="FALSE",fontcolor="RED"];
+Node_7 -> Node_8;
+}

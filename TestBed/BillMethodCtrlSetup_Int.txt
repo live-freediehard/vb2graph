@@ -1,0 +1,103 @@
+Private Sub BillMethodCtrlSetup(Index As Integer)
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+If Index = 0 Then
+fld_DisableCtrl FraPeriodic
+fld_DisableCtrl lblNoMonth
+fld_DisableCtrl lblNoMonth
+fld_DisableCtrl txtPrdNoMonth
+fld_EnableCtrl FraCalendar
+fld_EnableCtrl optCalendar(0)
+fld_EnableCtrl optCalendar(1)
+fld_EnableCtrl optCalendar(2)
+fld_EnableCtrl optCalendar(3)
+txtPrdNoMonth.Text = ""
+Dim lsBilling_Cal_Adv_Allowed As String
+Call GetPUConfigValue(ProcUnit, "BILLING_CAL_ADV_ALLOWED", lsBilling_Cal_Adv_Allowed)
+If lsBilling_Cal_Adv_Allowed = "Y" Then
+fld_EnableCtrl fraWhen
+fld_EnableCtrl optPrdWhen(0)
+fld_EnableCtrl optPrdWhen(1)
+Else
+fld_DisableCtrl fraWhen
+fld_DisableCtrl optPrdWhen(0)
+fld_DisableCtrl optPrdWhen(1)
+optPrdWhen(0).Value = False
+optPrdWhen(1).Value = True
+endif
+If ProdCat = "CIF" Then
+llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("PRD_FREQ", 0, False)
+llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("PRD_BASIS", "", False)
+fld_SetMandatory optCalendar(0), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optCalendar(1), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optCalendar(2), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optCalendar(3), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory txtPrdNoMonth, "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+If lsBilling_Cal_Adv_Allowed <> "Y" Then
+llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("PRD_WHEN_IND", "E", False)
+endif
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+fld_SetMandatory optCalendar(0), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optCalendar(1), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optCalendar(2), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optCalendar(3), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory txtPrdNoMonth, "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_BASIS", "", False)
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_FREQ", 0, False)
+If lsBilling_Cal_Adv_Allowed <> "Y" Then
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_WHEN_IND", "E", False)
+endif
+endif
+ElseIf Index = 1 Then
+fld_DisableCtrl FraCalendar
+fld_DisableCtrl optCalendar(0)
+fld_DisableCtrl optCalendar(1)
+fld_DisableCtrl optCalendar(2)
+fld_DisableCtrl optCalendar(3)
+fld_EnableCtrl FraPeriodic
+fld_EnableCtrl lblNoMonth
+fld_EnableCtrl fraWhen
+fld_EnableCtrl optPrdWhen(0)
+fld_EnableCtrl optPrdWhen(1)
+fld_EnableCtrl txtPrdNoMonth
+optCalendar(0).Value = False
+optCalendar(1).Value = False
+optCalendar(2).Value = False
+optCalendar(3).Value = False
+If ProdCat = "CIF" Then
+llRet = TransObj.Item("BILLING_SCHM_CIF").SetAttr("CALNDR_FREQ", "", False)
+fld_SetMandatory optCalendar(0), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optCalendar(1), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optCalendar(2), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optCalendar(3), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory txtPrdNoMonth, "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+fld_SetMandatory optCalendar(0), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optCalendar(1), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optCalendar(2), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory optCalendar(3), "", "", NOT_MANDATORY_FIELD
+fld_SetMandatory txtPrdNoMonth, "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(0), "", "", IS_MANDATORY_FIELD
+fld_SetMandatory optPrdWhen(1), "", "", IS_MANDATORY_FIELD
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("PRD_BASIS", "M", False)
+llRet = TransObj.Item(GT_RS_BILLING_SCHM).SetAttr("CALNDR_FREQ", "", False)
+endif
+ElseIf Index = -1 Then
+fld_DisableCtrl optCalendar(0)
+fld_DisableCtrl optCalendar(1)
+fld_DisableCtrl optCalendar(2)
+fld_DisableCtrl optCalendar(3)
+fld_DisableCtrl txtPrdNoMonth
+fld_DisableCtrl optPrdWhen(0)
+fld_DisableCtrl optPrdWhen(1)
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.BillMethodCtrlSetup", Index)
+End Sub

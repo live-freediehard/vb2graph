@@ -1,0 +1,9 @@
+Private Sub cboBillEndDay_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+If KeyCode = Look_Up_Key Then
+cboBillEndDay_DropDown
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_KeyDown", KeyCode, Shift)
+End Sub

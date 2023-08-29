@@ -1,0 +1,7 @@
+Private Sub billing_minamt_LostFocus()
+On Error GoTo ERR_SYSTEM
+fld_LostFocus0 Me, (billing_minamt.Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.billing_minamt_LostFocus")
+End Sub

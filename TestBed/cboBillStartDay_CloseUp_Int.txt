@@ -1,0 +1,8 @@
+Private Sub cboBillStartDay_CloseUp()
+On Error GoTo ERR_SYSTEM
+mcsrvBillStartDay.ShowCalendar
+gHandle_Got_Focus cboBillStartDay
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_CloseUp")
+End Sub

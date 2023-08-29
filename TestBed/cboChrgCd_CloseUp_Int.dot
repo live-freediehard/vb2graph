@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgCd_CloseUp()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="mobjChrgCdComboSQL.Validate  ?",shape="diamond"];
+Node_3 [ label ="mobjChrgCdComboSQL.UpdateLinkedControls\nCall cboChrgCd_LostFocus\nCall gbSetFocusToControl(cboCommStartDt)\nCall HiddenDefaultDate           'hidden default value",shape="box"];
+Node_4 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgCd_CloseUp')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}

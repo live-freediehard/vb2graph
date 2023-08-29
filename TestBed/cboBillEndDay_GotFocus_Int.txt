@@ -1,0 +1,11 @@
+Private Sub cboBillEndDay_GotFocus()
+On Error GoTo ERR_SYSTEM
+If mcsrvBillEndDay.ShowCalendarInProgress = False Then
+fld_GotFocus0 Me, (cboBillEndDay.Tag), PreValue, Initial_Color
+Else
+mcsrvBillEndDay.CompleteShowCalendar
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_GotFocus")
+End Sub

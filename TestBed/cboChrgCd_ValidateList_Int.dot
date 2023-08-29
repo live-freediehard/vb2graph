@@ -1,0 +1,17 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgCd_ValidateList(Text As String, RtnPassed As Integer)\nOn Error GoTo ERR_SYSTEM\nWith mobjChrgCdComboSQL",shape="box"];
+Node_2 [ label =".Initialized = False  ?",shape="diamond"];
+Node_3 [ label =".Initialize\n.Populate",shape="box"];
+Node_4 [ label ="endif\nRtnPassed = .Validate(Text)\n.UpdateLinkedControls giCLEAR_IF_INVALID\nEnd With",shape="box"];
+Node_5 [ label ="Text = '0'  ?",shape="diamond"];
+Node_6 [ label ="RtnPassed = True",shape="box"];
+Node_7 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgCd_ValidateList', Text, RtnPassed)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+Node_5 -> Node_6 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5;
+Node_5 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+}

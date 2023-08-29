@@ -1,0 +1,17 @@
+digraph G{
+Node_1 [ label ="Private Sub cboBillStartDay_LostFocus()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="mcsrvBillStartDay.ShowCalendarInProgress = False  ?",shape="diamond"];
+Node_3 [ label ="fld_LostFocus0 Me, (cboBillStartDay.Tag), PreValue, Initial_Color",shape="box"];
+Node_4 [ label ="ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC  ?",shape="diamond"];
+Node_5 [ label ="mValidateBillSchm",shape="box"];
+Node_6 [ label ="endif",shape="box"];
+Node_7 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboBillStartDay_LostFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_4;
+Node_4 -> Node_6 [label="FALSE",fontcolor="RED"];
+Node_5 -> Node_6;
+Node_2 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+}

@@ -1,0 +1,33 @@
+Private Sub cboChrgCd_LostFocus()
+On Error GoTo ERR_SYSTEM
+Dim llCurrRow As Long
+Dim llRet As Long
+Dim ldtCCTD As Date
+fld_LostFocus0 Me, (cboChrgCd.Tag), PreValue, Initial_Color
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If cboChrgCd.Text = "" Then
+txtChrgBillingTyp.Text = ""
+llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("BILLING_TYP", "", False)
+lblChrgCd.Caption = ""
+lblChrgBillingDesc.Caption = ""
+txtBillingTyp.Text = ""
+lblBillingDesc.Caption = ""
+endif
+mSetChrgSchmFilter False
+mSetBillingSchmFilter False
+GetDispData
+If mobjChrgCdComboSQL.Validate Then
+mobjChrgCdComboSQL.UpdateLinkedControls
+ldtCCTD = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("COMM_COL_TILL_DT")
+If DateDiff("d", ldtCCTD, EMPTY_DT) = 0 Then
+mSetNewChrgDtlDefault False
+endif
+endif
+mSetChrgSchmDisEnable ' To set the disable/enable properties regarding the charge level
+mSetBillingSchmDisEnable ' To set the disable/enable properties regarding the billing level
+Call SetChrgActCd(0)
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_LostFocus")
+End Sub

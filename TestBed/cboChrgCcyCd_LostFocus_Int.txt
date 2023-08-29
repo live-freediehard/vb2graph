@@ -1,0 +1,16 @@
+Private Sub cboChrgCcyCd_LostFocus()
+On Error GoTo ERR_SYSTEM
+Dim sValue As String
+fld_LostFocus0 Me, (cboChrgCcyCd.Tag), PreValue, Initial_Color
+If Get_Error_Status() = FLD_INPUT_OK And cboChrgCcyCd.Text <> "" Then
+If GetPUConfigValue(ProcUnit, "IS_ANNUAL_BASIS_DEPEND_CCY", sValue) Then
+If sValue = "Y" Then
+Call mSetBaseYrDefault
+MsgBox "Annual Basis is reset", vbExclamation
+endif
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_LostFocus")
+End Sub

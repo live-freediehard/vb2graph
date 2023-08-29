@@ -1,0 +1,17 @@
+Private Sub cboChrgCd_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+With mobjChrgCdComboSQL
+If .Initialized = False Then
+.Initialize
+.Populate
+endif
+RtnPassed = .Validate(Text)
+.UpdateLinkedControls giCLEAR_IF_INVALID
+End With
+If Text = "0" Then
+RtnPassed = True
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_ValidateList", Text, RtnPassed)
+End Sub

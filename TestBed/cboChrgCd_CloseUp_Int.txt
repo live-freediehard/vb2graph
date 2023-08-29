@@ -1,0 +1,12 @@
+Private Sub cboChrgCd_CloseUp()
+On Error GoTo ERR_SYSTEM
+If mobjChrgCdComboSQL.Validate Then
+mobjChrgCdComboSQL.UpdateLinkedControls
+Call cboChrgCd_LostFocus
+Call gbSetFocusToControl(cboCommStartDt)
+Call HiddenDefaultDate           'hidden default value
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_CloseUp")
+End Sub

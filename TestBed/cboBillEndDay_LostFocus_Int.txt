@@ -1,0 +1,17 @@
+Private Sub cboBillEndDay_LostFocus()
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+If mcsrvBillEndDay.ShowCalendarInProgress = False Then
+fld_LostFocus0 Me, (cboBillEndDay.Tag), PreValue, Initial_Color
+If cboBillEndDay.Text = "" Then
+If ProdCat = "CIF" Then
+llRet = StoreAttr(TransObj.Item("BILLING_SCHM_CIF"), "EFF_TO_DT", MAX_DT, False)
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+llRet = StoreAttr(TransObj.Item(GT_RS_BILLING_SCHM), "EFF_TO_DT", MAX_DT, False)
+endif
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_LostFocus")
+End Sub

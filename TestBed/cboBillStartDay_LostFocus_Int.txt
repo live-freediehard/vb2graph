@@ -1,0 +1,12 @@
+Private Sub cboBillStartDay_LostFocus()
+On Error GoTo ERR_SYSTEM
+If mcsrvBillStartDay.ShowCalendarInProgress = False Then
+fld_LostFocus0 Me, (cboBillStartDay.Tag), PreValue, Initial_Color
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+mValidateBillSchm
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillStartDay_LostFocus")
+End Sub

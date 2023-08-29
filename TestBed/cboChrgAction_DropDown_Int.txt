@@ -1,0 +1,16 @@
+Private Sub cboChrgAction_DropDown()
+On Error GoTo ERR_SYSTEM
+With mcsrvChrgAction
+If .Initialized = False Then
+.Initialize
+.Columns("PRODUCT_LVL").Caption = "Charge Action"
+.Columns("PRODUCT_LVL").Width = 1200
+.Columns("PRODUCT_LVL_DESC").Caption = "Description"
+.Columns("PRODUCT_LVL_DESC").Width = 1200
+.Populate
+endif
+End With
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgAction_DropDown")
+End Sub

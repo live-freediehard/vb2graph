@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgAction_CloseUp()\nOn Error GoTo ERR_SYSTEM\nWith mcsrvChrgAction\n.Validate\n.UpdateLinkedControls giCLEAR_IF_INVALID\nEnd With\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgAction_CloseUp')\nEnd Sub",shape="box"];
+}

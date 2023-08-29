@@ -1,0 +1,9 @@
+Private Sub cboChrgCd_UnboundReadData(ByVal RowBuf As SSDataWidgets_B.ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+If Not mobjChrgCdComboSQL Is Nothing Then
+mobjChrgCdComboSQL.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCd_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub

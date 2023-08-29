@@ -1,0 +1,12 @@
+Private Sub cboChrgCcyCd_DropDown()
+On Error GoTo ERR_SYSTEM
+With mcsrvChrgCcyCd
+If .Initialized = False Then
+.Initialize
+.Populate
+endif
+End With
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_DropDown")
+End Sub

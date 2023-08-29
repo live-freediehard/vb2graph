@@ -1,0 +1,24 @@
+digraph G{
+Node_1 [ label ="Private Sub cboBillEndDay_LostFocus()\nOn Error GoTo ERR_SYSTEM\nDim llRet As Long",shape="box"];
+Node_2 [ label ="mcsrvBillEndDay.ShowCalendarInProgress = False  ?",shape="diamond"];
+Node_3 [ label ="fld_LostFocus0 Me, (cboBillEndDay.Tag), PreValue, Initial_Color",shape="box"];
+Node_4 [ label ="cboBillEndDay.Text = ''  ?",shape="diamond"];
+Node_5 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_6 [ label ="llRet = StoreAttr(TransObj.Item('BILLING_SCHM_CIF'), 'EFF_TO_DT', MAX_DT, False)",shape="box"];
+Node_7 [ label =" Check ? :  ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then\nllRet = StoreAttr(TransObj.Item(GT_RS_BILLING_SCHM), 'EFF_TO_DT', MAX_DT, False)",shape="box"];
+Node_8 [ label ="endif",shape="box"];
+Node_9 [ label ="endif",shape="box"];
+Node_10 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboBillEndDay_LostFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_4;
+Node_5 -> Node_6 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_7 [label="False",fontcolor="RED"];
+Node_6 -> Node_8;
+Node_7 -> Node_8;
+Node_4 -> Node_9 [label="FALSE",fontcolor="RED"];
+Node_8 -> Node_9;
+Node_2 -> Node_10 [label="FALSE",fontcolor="RED"];
+Node_9 -> Node_10;
+}

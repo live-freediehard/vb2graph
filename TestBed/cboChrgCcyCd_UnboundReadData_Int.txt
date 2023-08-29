@@ -1,0 +1,7 @@
+Private Sub cboChrgCcyCd_UnboundReadData(ByVal RowBuf As ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+mcsrvChrgCcyCd.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub

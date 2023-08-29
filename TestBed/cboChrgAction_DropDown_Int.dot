@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgAction_DropDown()\nOn Error GoTo ERR_SYSTEM\nWith mcsrvChrgAction",shape="box"];
+Node_2 [ label =".Initialized = False  ?",shape="diamond"];
+Node_3 [ label =".Initialize\n.Columns('PRODUCT_LVL').Caption = 'Charge Action'\n.Columns('PRODUCT_LVL').Width = 1200\n.Columns('PRODUCT_LVL_DESC').Caption = 'Description'\n.Columns('PRODUCT_LVL_DESC').Width = 1200\n.Populate",shape="box"];
+Node_4 [ label ="endif\nEnd With\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgAction_DropDown')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}

@@ -1,0 +1,19 @@
+Private Sub cboBillEndDay_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+Dim StartDys As Date
+Dim EndDys As Date
+Dim ErrCode As Long
+If ProdCat = "CIF" Then
+StartDys = TransObj.Item("BILLING_SCHM_CIF").GetAttr("EFF_FROM_DT")
+EndDys = TransObj.Item("BILLING_SCHM_CIF").GetAttr("EFF_TO_DT")
+If cboBillStartDay.Text <> "" And cboBillEndDay.Text <> "" Then
+If DateDiff("d", StartDys, EndDys) < 0 Then
+ErrCode = 80032
+RtnPassed = mcsrvBillEndDay.Validate(Text, StartDys, EndDys, True, ErrCode)
+endif
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboBillEndDay_ValidateList", Text, RtnPassed)
+End Sub
