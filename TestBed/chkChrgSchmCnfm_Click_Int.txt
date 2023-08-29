@@ -1,0 +1,11 @@
+Private Sub chkChrgSchmCnfm_Click(Value As Integer)
+If chkChrgSchmCnfm.Value Then
+pnlChrgSchmCnfm.ForeColor = QBColor(G_RED)
+pnlChrgSchmCnfm.Caption = "Yes"
+bBillingChrgCfnmInd = True
+Else
+pnlChrgSchmCnfm.ForeColor = QBColor(G_BLUE)
+pnlChrgSchmCnfm.Caption = "No"
+bBillingChrgCfnmInd = False
+endif
+End Sub

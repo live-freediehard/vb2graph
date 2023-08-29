@@ -1,0 +1,9 @@
+Private Sub mReleaseControlServerControls()
+On Error GoTo ERR_SYSTEM
+If Not (mcsrvChrgCcyCd Is Nothing) Then
+Set mcsrvChrgCcyCd = Nothing
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mReleaseControlServerControls")
+End Sub

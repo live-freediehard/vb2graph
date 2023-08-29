@@ -1,0 +1,8 @@
+Private Sub mPreInitializeForm()
+On Error GoTo ERR_SYSTEM
+mbInitializeFormHasBeenCalled = False
+Me.Enabled = False
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mPreInitializeForm")
+End Sub

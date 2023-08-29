@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub HandleMultiChange()\nOn Error GoTo ERR_SYSTEM\nlblBillingDesc.Caption = TransObj.Item('BILLING_TYP_CIF').GetAttr('BILLING_DESC')\nlblChrgCd.Caption = TransObj.Item('BILL_CHRG_CD_CIF').GetAttr('CHRG_DESC')\nlblChrgBillingDesc.Caption = TransObj.Item('BILL_CHRG_CD_CIF').GetAttr('BILLING_DESC')",shape="box"];
+Node_2 [ label ="Not Is_Enq  ?",shape="diamond"];
+Node_3 [ label ="mSetBillingSchmDisEnable\nmSetChrgSchmDisEnable",shape="box"];
+Node_4 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.HandleMultiChange')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}

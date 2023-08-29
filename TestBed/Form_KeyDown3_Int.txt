@@ -1,0 +1,71 @@
+Private Sub Form_KeyDown3(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+Dim lsChrgBillTyp As String
+Dim lsChrgCd As String
+If Shift = FUNCTION_KEY Then
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If KeyCode = DEL_PAGE_KEY Then
+If TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("USER_DEFN_IND") = PRD_CHRG_SYS_GEN Then
+MsgBox "You cannot delete a system generated charge"
+Exit Sub
+Else
+If TransObj.Item(GT_RS_BILLING_DTL_LC).RowCount > 0 Then
+lsChrgBillTyp = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("BILLING_TYP")
+lsChrgCd = TransObj.Item(GT_RS_BILLING_DTL_LC).GetAttr("CHRG_CD")
+Else
+lsChrgBillTyp = ""
+lsChrgCd = ""
+endif
+endif
+endif
+endif
+Select Case KeyCode
+Case Else
+frm_KeyDown0 Me, (multi_msg3.Tag), txt_multi3, KeyCode, frm_tg_Bill_Chrg_Cd
+End Select
+If ProdCat = "CIF" Then
+Call FilterChrgRecSet
+lblChrgCd.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("CHRG_DESC")
+lblChrgBillingDesc.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("BILLING_DESC")
+frm_Load Me
+If Not Is_Enq Then
+mSetChrgSchmDisEnable
+mSetBillingSchmDisEnable
+endif
+If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+mDisableChrgSchmCtrl
+mDisableBillSchmCtrl
+endif
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If KeyCode = INS_PAGE_KEY Then
+mSetNewChrgDtlDefault True 'Set recset default values
+ElseIf KeyCode = DEL_PAGE_KEY Then
+If lsChrgBillTyp <> "" Then
+ClearUpBillSchm lsChrgBillTyp   'Clearup unuse
+endif
+If lsChrgCd <> "" Then
+ClearUpChrgSchm lsChrgCd, "" 'Clearup unuse
+endif
+endif
+If KeyCode <> GRID_SHOW_KEY Then
+lblChrgCd.Caption = ""
+lblChrgBillingDesc.Caption = ""
+lblBillingDesc.Caption = ""
+txtBillingTyp.Text = ""
+If KeyCode = DEL_PAGE_KEY Or KeyCode = INS_PAGE_KEY Then
+mSetChrgSchmFilter True
+mSetBillingSchmFilter True
+GetDispData
+endif
+Call mSetChrgSchmDisEnable
+Call mSetBillingSchmDisEnable
+Call cboChrgCd_CloseUp
+endif
+endif
+Call HiddenDefaultDate
+Call SetChrgActCd(0)
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown3", KeyCode, Shift)
+End Sub

@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub chkChrgSchmCnfm_LostFocus()\nCall RestoreColor(BACK_COLOR, pnlChrgSchmCnfm, Initial_Color)\nEnd Sub",shape="box"];
+}

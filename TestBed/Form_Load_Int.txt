@@ -1,0 +1,24 @@
+Private Sub Form_Load()
+On Error GoTo ERR_SYSTEM
+If ProdCat = "CIF" Then
+frmBillingSch.Tag = "frmBillingSch_CIF"
+Else
+frmBillingSch.Tag = "frmBillingSch"
+endif
+Call mPreInitializeForm
+Call mInitializeControlServerControls
+Call MyPreForm
+If ProdCat = "CIF" Then
+Call FilterBillRecSet
+Call FilterChrgRecSet
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+mSetBillingSchmFilter False
+mSetChrgSchmFilter False
+mSetChrgSchmDisEnable
+mSetBillingSchmDisEnable
+mSetSkipAmortAccuralDisEnable
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_Load")
+End Sub

@@ -1,0 +1,21 @@
+digraph G{
+Node_1 [ label ="Private Sub Form_Load()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_3 [ label ="frmBillingSch.Tag = 'frmBillingSch_CIF'",shape="box"];
+Node_4 [ label ="frmBillingSch.Tag = 'frmBillingSch'",shape="box"];
+Node_5 [ label ="endif\nCall mPreInitializeForm\nCall mInitializeControlServerControls\nCall MyPreForm",shape="box"];
+Node_6 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_7 [ label ="Call FilterBillRecSet\nCall FilterChrgRecSet",shape="box"];
+Node_8 [ label =" Check ? :  ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then\nmSetBillingSchmFilter False\nmSetChrgSchmFilter False\nmSetChrgSchmDisEnable\nmSetBillingSchmDisEnable\nmSetSkipAmortAccuralDisEnable",shape="box"];
+Node_9 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.Form_Load')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="False",fontcolor="RED"];
+Node_3 -> Node_5;
+Node_4 -> Node_5;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_6 -> Node_8 [label="False",fontcolor="RED"];
+Node_7 -> Node_9;
+Node_8 -> Node_9;
+}

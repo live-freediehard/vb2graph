@@ -1,0 +1,28 @@
+Private Sub cboSkip_LostFocus()
+On Error GoTo ERR_SYSTEM
+fld_LostFocus0 Me, (cboSkip.Tag), PreValue, Initial_Color
+If cboSkip.Text <> "N" Then
+If Not Is_Enq Then
+If TranType = GT_TTY_FIN_ADJ Then
+fld_EnableCtrl txtSkipReason
+fld_SetMandatory txtSkipReason, "", "", IS_MANDATORY_FIELD
+endif
+Else
+fld_DisableCtrl txtSkipReason
+endif
+Else
+If Not Is_Enq Then
+If Not FormLoading Then
+txtSkipReason.Text = ""
+llRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr("SKIP_ACCR_AMORTN_REASON", "", False)
+endif
+fld_SetMandatory txtSkipReason, "", "", NOT_MANDATORY_FIELD
+fld_DisableCtrl txtSkipReason
+Else
+fld_DisableCtrl txtSkipReason
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_LostFocus")
+End Sub

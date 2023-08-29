@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub GetDispData()\nOn Error GoTo ERR_SYSTEM\nDim loRecObj As OGTRecordSet\nfrm_Load Me\nmSetSkipAmortAccuralDisEnable\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.GetDispData')\nEnd Sub",shape="box"];
+}

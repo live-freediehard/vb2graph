@@ -1,0 +1,16 @@
+Private Sub cboSkip_DropDown()
+On Error GoTo ERR_SYSTEM
+With mcsrvSkipAmortAccural
+If .Initialized = False Then
+.Initialize
+.Columns("PRODUCT_LVL").Caption = "Code"
+.Columns("PRODUCT_LVL").Width = 1000
+.Columns("PRODUCT_LVL_DESC").Caption = "Description"
+.Columns("PRODUCT_LVL_DESC").Width = 1500
+.Populate
+endif
+End With
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_DropDown")
+End Sub

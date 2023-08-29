@@ -1,0 +1,33 @@
+Private Function mSameBillSchmStDt(ByRef pbEmptyDt As Boolean)
+On Error GoTo ERR_SYSTEM
+Dim loRecSet As OGTRecordSet
+Dim llRowCnt As Long
+Dim llCnt As Long
+Dim llCurr As Long
+Dim ldtCurrSt As Date
+mSameBillSchmStDt = False
+pbEmptyDt = False
+Set loRecSet = TransObj.Item(GT_RS_BILLING_SCHM)
+If Not loRecSet Is Nothing Then
+llRowCnt = loRecSet.RowCount
+If llRowCnt > 0 Then
+llCurr = loRecSet.CurrentRow
+ldtCurrSt = loRecSet.GetAttr("EFF_FROM_DT")
+If DateDiff("d", ldtCurrSt, EMPTY_DT) = 0 Then pbEmptyDt = True
+For llCnt = 0 To llRowCnt - 1
+If llCnt <> llCurr Then
+loRecSet.CurrentRow = llCnt
+If DateDiff("d", ldtCurrSt, loRecSet.GetAttr("EFF_FROM_DT")) = 0 _
+And loRecSet.GetAttr("BILLING_LVL") = LC_LEVEL_VALUE Then
+mSameBillSchmStDt = True
+Exit For
+endif
+endif
+Next
+loRecSet.CurrentRow = llCurr
+endif
+endif
+Exit Function
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSameBillSchmStDt", pbEmptyDt)
+End Function

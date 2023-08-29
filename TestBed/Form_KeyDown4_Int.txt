@@ -1,0 +1,67 @@
+Private Sub Form_KeyDown4(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+Dim sValue As String
+If Shift = FUNCTION_KEY Then
+If ProdCat = "CIF" Then
+If KeyCode = DEL_PAGE_KEY And txtChrgLvl.Text <> CIF_LEVEL_VALUE Then
+MsgBox "Only Customer Level record can be deleted", vbExclamation
+Exit Sub
+endif
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If (KeyCode = DEL_PAGE_KEY Or KeyCode = INS_PAGE_KEY) And txtChrgLvl.Text = "" Then
+Exit Sub
+endif
+If KeyCode = DEL_PAGE_KEY And txtChrgLvl.Text <> LC_LEVEL_VALUE Then
+MsgBox "Only LC Level record can be deleted", vbExclamation
+Exit Sub
+endif
+endif
+Select Case KeyCode
+Case Else
+frm_KeyDown0 Me, (multi_msg4.Tag), txt_multi4, KeyCode, frm_tg_Bill_Chrg_Schm
+End Select
+If ProdCat = "CIF" Then
+Call FilterChrgRecSet
+Dim llRet As Long
+If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+If sValue <> "Y" Then
+llRet = TransObj.Item("BILL_CHRG_SCHM_CIF").SetAttr("CHRG_CCY_CD", TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttrAtRow(0, "CHRG_CCY_CD"), False)
+endif
+endif
+frm_Load Me
+If Not Is_Enq Then
+mSetChrgSchmDisEnable
+mSetBillingSchmDisEnable
+endif
+If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+mDisableChrgSchmCtrl
+mDisableBillSchmCtrl
+endif
+If KeyCode = INS_PAGE_KEY Then Call gbSetFocusToControl(cboChrgStartDay)
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If KeyCode = INS_PAGE_KEY Then
+Call mSetNewChrgSchmDefault 'Set recset default values
+ElseIf KeyCode = DEL_PAGE_KEY Then
+mSetChrgSchmFilter True
+endif
+If KeyCode <> GRID_SHOW_KEY Then
+GetDispData  ' will then update the disable/enable
+Call mSetChrgSchmDisEnable
+endif
+If KeyCode = INS_PAGE_KEY Then Call gbSetFocusToControl(cboChrgStartDay)
+endif
+Call HiddenDefaultDate
+Call SetChrgActCd(0)
+If GetPUConfigValue(ProcUnit, "DISABLE_ANNUAL_BASIS", sValue) Then
+If sValue = "Y" Then
+fld_DisableCtrl optChrgSchmCal(0)
+fld_DisableCtrl optChrgSchmCal(1)
+fld_DisableCtrl optChrgSchmCal(2)
+endif
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown4", KeyCode, Shift)
+End Sub

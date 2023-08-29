@@ -1,0 +1,3 @@
+Private Sub chkChrgSchmCnfm_LostFocus()
+Call RestoreColor(BACK_COLOR, pnlChrgSchmCnfm, Initial_Color)
+End Sub

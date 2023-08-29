@@ -1,0 +1,16 @@
+Private Sub mDisableChrgSchmCtrl()
+On Error GoTo ERR_SYSTEM
+fld_DisableCtrl cboChrgAction
+fld_DisableCtrl cboChrgStartDay
+fld_DisableCtrl txtChrgRate
+fld_DisableCtrl cboChrgEndDay
+fld_DisableCtrl txtMinAmt
+fld_DisableCtrl optChrgSchmCal(0)
+fld_DisableCtrl optChrgSchmCal(1)
+fld_DisableCtrl optChrgSchmCal(2)
+fld_DisableCtrl cboChrgCcyCd
+fld_DisableCtrl cboMinAmtCcy
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mDisableChrgSchmCtrl")
+End Sub

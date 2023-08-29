@@ -1,0 +1,17 @@
+Private Sub mDisableBillSchmCtrl()
+On Error GoTo ERR_SYSTEM
+fld_DisableCtrl cboBillStartDay
+fld_DisableCtrl cboBillEndDay
+fld_DisableCtrl optCollectMthd(0)
+fld_DisableCtrl optCollectMthd(1)
+fld_DisableCtrl optCalendar(0)
+fld_DisableCtrl optCalendar(1)
+fld_DisableCtrl optCalendar(2)
+fld_DisableCtrl optCalendar(3)
+fld_DisableCtrl txtPrdNoMonth
+fld_DisableCtrl optPrdWhen(0)
+fld_DisableCtrl optPrdWhen(1)
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mDisableBillSchmCtrl")
+End Sub

@@ -1,0 +1,43 @@
+Private Function mSameChrgSchmStDt(ByRef pbEmptyDt As Boolean)
+On Error GoTo ERR_SYSTEM
+Dim loRecSet As OGTRecordSet
+Dim llRowCnt As Long
+Dim llCnt As Long
+Dim llCurr As Long
+Dim ldtCurrSt As Date
+mSameChrgSchmStDt = False
+pbEmptyDt = False
+If ProdCat = "CIF" Then
+Set loRecSet = TransObj.Item("BILL_CHRG_SCHM_CIF")
+Else
+Set loRecSet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+endif
+If Not loRecSet Is Nothing Then
+llRowCnt = loRecSet.RowCount
+llCurr = loRecSet.CurrentRow
+ldtCurrSt = loRecSet.GetAttr("EFF_FROM_DT")
+If DateDiff("d", ldtCurrSt, EMPTY_DT) = 0 Then pbEmptyDt = True
+For llCnt = 0 To llRowCnt - 1
+If llCnt <> llCurr Then
+loRecSet.CurrentRow = llCnt
+If ProdCat = "CIF" Then
+If DateDiff("d", ldtCurrSt, loRecSet.GetAttr("EFF_FROM_DT")) = 0 _
+And loRecSet.GetAttr("CHRG_LVL") = CIF_LEVEL_VALUE And cboChrgStartDay.Text = "" Then
+mSameChrgSchmStDt = True
+Exit For
+endif
+Else
+If DateDiff("d", ldtCurrSt, loRecSet.GetAttr("EFF_FROM_DT")) = 0 _
+And loRecSet.GetAttr("CHRG_LVL") = LC_LEVEL_VALUE Then
+mSameChrgSchmStDt = True
+Exit For
+endif
+endif
+endif
+Next
+loRecSet.CurrentRow = llCurr
+endif
+Exit Function
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSameChrgSchmStDt", pbEmptyDt)
+End Function

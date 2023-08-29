@@ -1,0 +1,58 @@
+Private Sub Form_KeyDown2(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+Dim llRet As Long
+If Shift = FUNCTION_KEY Then
+If ProdCat = "CIF" Then
+If KeyCode = DEL_PAGE_KEY And txtBillingLvl.Text <> CIF_LEVEL_VALUE Then
+MsgBox "Only Customer Level record can be deleted", vbExclamation
+Exit Sub
+endif
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If (KeyCode = DEL_PAGE_KEY Or KeyCode = INS_PAGE_KEY) And txtBillingTyp.Text = "" Then
+Exit Sub
+endif
+If KeyCode = DEL_PAGE_KEY And txtBillingLvl.Text <> LC_LEVEL_VALUE Then
+MsgBox "Only LC Level record can be deleted", vbExclamation
+Exit Sub
+endif
+endif
+Select Case KeyCode
+Case Else
+frm_KeyDown0 Me, (multi_msg2.Tag), txt_multi2, KeyCode, frm_tg_Billing_Schm
+End Select
+If ProdCat = "CIF" Then
+Call FilterBillRecSet
+frm_Load Me
+If KeyCode = INS_PAGE_KEY Then
+If TransObj.Item("BILLING_SCHM_CIF").IsDirty = False Then
+TransObj.Item("BILLING_SCHM_CIF").SetDirty (True)
+endif
+endif
+If Not Is_Enq Then
+mSetBillingSchmDisEnable
+mSetChrgSchmDisEnable
+endif
+If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+mDisableChrgSchmCtrl
+mDisableBillSchmCtrl
+endif
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If KeyCode = INS_PAGE_KEY Then
+Call mSetNewBillingSchmDefault 'Set recset default values
+ElseIf KeyCode = DEL_PAGE_KEY Then
+mSetBillingSchmFilter True
+endif
+If KeyCode <> GRID_SHOW_KEY Then
+GetDispData  ' will then update the disable/enable
+Call mSetBillingSchmDisEnable
+endif
+If KeyCode = INS_PAGE_KEY Then Call gbSetFocusToControl(cboBillStartDay)
+endif
+Call HiddenDefaultDate
+Call SetChrgActCd(0)
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown2", KeyCode, Shift)
+End Sub

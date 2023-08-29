@@ -1,0 +1,38 @@
+digraph G{
+Node_1 [ label ="Private Function mSameBillSchmStDt(ByRef pbEmptyDt As Boolean)\nOn Error GoTo ERR_SYSTEM\nDim loRecSet As OGTRecordSet\nDim llRowCnt As Long\nDim llCnt As Long\nDim llCurr As Long\nDim ldtCurrSt As Date\nmSameBillSchmStDt = False\npbEmptyDt = False\nSet loRecSet = TransObj.Item(GT_RS_BILLING_SCHM)",shape="box"];
+Node_2 [ label ="Not loRecSet Is Nothing  ?",shape="diamond"];
+Node_3 [ label ="llRowCnt = loRecSet.RowCount",shape="box"];
+Node_4 [ label ="llRowCnt > 0  ?",shape="diamond"];
+Node_5 [ label ="llCurr = loRecSet.CurrentRow\nldtCurrSt = loRecSet.GetAttr('EFF_FROM_DT')",shape="box"];
+Node_6 [ label ="DateDiff('d', ldtCurrSt, EMPTY_DT) = 0  ? pbEmptyDt = True",shape="diamond"];
+Node_7 [ label ="For llCnt = 0 To llRowCnt - 1",shape="Mdiamond"];
+Node_8 [ label ="llCnt <> llCurr  ?",shape="diamond"];
+Node_9 [ label ="loRecSet.CurrentRow = llCnt",shape="box"];
+Node_10 [ label ="DateDiff('d', ldtCurrSt, loRecSet.GetAttr('EFF_FROM_DT')) = 0 _",shape="diamond"];
+Node_11 [ label ="And loRecSet.GetAttr('BILLING_LVL') = LC_LEVEL_VALUE Then\nmSameBillSchmStDt = True\nExit For",shape="box"];
+Node_12 [ label ="endif",shape="box"];
+Node_13 [ label ="endif",shape="box"];
+Node_14 [ label ="Next\nloRecSet.CurrentRow = llCurr",shape="box"];
+Node_15 [ label ="endif",shape="box"];
+Node_16 [ label ="endif\nExit Function\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mSameBillSchmStDt', pbEmptyDt)\nEnd Function",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_4;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_7 -> Node_8 [label="True",fontcolor="GREEN"];
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_10 -> Node_11 [label="True",fontcolor="GREEN"];
+Node_9 -> Node_10;
+Node_10 -> Node_12 [label="FALSE",fontcolor="RED"];
+Node_11 -> Node_12;
+Node_8 -> Node_13 [label="FALSE",fontcolor="RED"];
+Node_12 -> Node_13;
+Node_14 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_14 -> Node_15;
+Node_13 -> Node_14;
+Node_6 -> Node_15 [label="FALSE",fontcolor="RED"];
+Node_4 -> Node_16 [label="FALSE",fontcolor="RED"];
+Node_15 -> Node_16;
+}

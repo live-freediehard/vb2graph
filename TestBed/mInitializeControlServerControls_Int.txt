@@ -1,0 +1,92 @@
+Sub mInitializeControlServerControls()
+On Error GoTo ERR_SYSTEM
+Set mcsrvBillEndDay = New CComboByCalendar
+With mcsrvBillEndDay
+Set .ComboObject = cboBillEndDay
+.DateFormat = DateFormat
+End With
+Set mcsrvBillStartDay = New CComboByCalendar
+With mcsrvBillStartDay
+Set .ComboObject = cboBillStartDay
+.DateFormat = DateFormat
+End With
+Set mcsrvChrgStartDay = New CComboByCalendar
+With mcsrvChrgStartDay
+Set .ComboObject = cboChrgStartDay
+.DateFormat = DateFormat
+End With
+Set mcsrvChrgEndDay = New CComboByCalendar
+With mcsrvChrgEndDay
+Set .ComboObject = cboChrgEndDay
+.DateFormat = DateFormat
+End With
+Set mcsrvCommStartDt = New CComboByCalendar
+With mcsrvCommStartDt
+Set .ComboObject = cboCommStartDt
+.DateFormat = DateFormat
+End With
+Set mcsrvNextBillDt = New CComboByCalendar
+With mcsrvNextBillDt
+Set .ComboObject = cboNextBillDt
+.DateFormat = DateFormat
+End With
+Set mcsrvLastBillDt = New CComboByCalendar
+With mcsrvLastBillDt
+Set .ComboObject = cboLastBillDt
+.DateFormat = DateFormat
+End With
+Set mcsrvChrgAction = New CComboByArray
+With mcsrvChrgAction
+.ComboID = glCOMBO_ID_GENERIC_BY_ARRAY
+Set .ComboObject = cboChrgAction
+If ProdCat = "CIF" Then
+Dim DataArrayCIF(0 To 2, 0 To 1)
+DataArrayCIF(0, 0) = CHRG_ACT_TAKE
+DataArrayCIF(0, 1) = CHRG_ACT_CD_TAKE
+DataArrayCIF(1, 0) = CHRG_ACT_WAIVE
+DataArrayCIF(1, 1) = CHRG_ACT_CD_WAIVE
+DataArrayCIF(2, 0) = CHRG_ACT_REFER
+DataArrayCIF(2, 1) = CHRG_ACT_CD_REFER
+.DataArray = DataArrayCIF
+Else
+Dim DataArrayLC(0 To 1, 0 To 1)
+DataArrayLC(0, 0) = CHRG_ACT_TAKE
+DataArrayLC(0, 1) = CHRG_ACT_CD_TAKE
+DataArrayLC(1, 0) = CHRG_ACT_WAIVE
+DataArrayLC(1, 1) = CHRG_ACT_CD_WAIVE
+.DataArray = DataArrayLC
+endif
+.FieldNamesArray = Array("PRODUCT_LVL_DESC", "PRODUCT_LVL")
+End With
+Set mcsrvSkipAmortAccural = New CComboByArray
+With mcsrvSkipAmortAccural
+.ComboID = glCOMBO_ID_GENERIC_BY_ARRAY
+Set .ComboObject = cboSkip
+If ProdCat <> "CIF" Then
+Dim DataArraySkip(0 To 2, 0 To 1)
+DataArraySkip(0, 0) = SKIP_CD_YES
+DataArraySkip(0, 1) = SKIP_YES
+DataArraySkip(1, 0) = SKIP_CD_NO
+DataArraySkip(1, 1) = SKIP_NO
+DataArraySkip(2, 0) = SKIP_CD_ONE_CYCLE
+DataArraySkip(2, 1) = SKIP_ONE_CYCLE
+.DataArray = DataArraySkip
+endif
+.FieldNamesArray = Array("PRODUCT_LVL", "PRODUCT_LVL_DESC")
+End With
+Set mcsrvChrgCcyCd = New CComboByLookup
+With mcsrvChrgCcyCd
+Set .ComboObject = cboChrgCcyCd
+.ComboID = glCOMBO_ID_GENERIC_BY_LOOKUP
+.LookupID = "Currency"
+End With
+Set mcsrvMinChrgCcyCd = New CComboByLookup
+With mcsrvMinChrgCcyCd
+Set .ComboObject = cboMinAmtCcy
+.ComboID = glCOMBO_ID_GENERIC_BY_LOOKUP
+.LookupID = "Currency"
+End With
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mInitializeControlServerControls")
+End Sub

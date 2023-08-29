@@ -1,0 +1,36 @@
+digraph G{
+Node_1 [ label ="Private Sub cboSkip_LostFocus()\nOn Error GoTo ERR_SYSTEM\nfld_LostFocus0 Me, (cboSkip.Tag), PreValue, Initial_Color",shape="box"];
+Node_2 [ label ="cboSkip.Text <> 'N'  ?",shape="diamond"];
+Node_3 [ label ="Not Is_Enq  ?",shape="diamond"];
+Node_4 [ label ="TranType = GT_TTY_FIN_ADJ  ?",shape="diamond"];
+Node_5 [ label ="fld_EnableCtrl txtSkipReason\nfld_SetMandatory txtSkipReason, '', '', IS_MANDATORY_FIELD",shape="box"];
+Node_6 [ label ="endif",shape="box"];
+Node_7 [ label ="fld_DisableCtrl txtSkipReason",shape="box"];
+Node_8 [ label ="endif",shape="box"];
+Node_9 [ label ="Not Is_Enq  ?",shape="diamond"];
+Node_10 [ label ="Not FormLoading  ?",shape="Mdiamond"];
+Node_11 [ label ="txtSkipReason.Text = ''\nllRet = TransObj.Item(GT_RS_BILLING_DTL_LC).SetAttr('SKIP_ACCR_AMORTN_REASON', '', False)",shape="box"];
+Node_12 [ label ="endif\nfld_SetMandatory txtSkipReason, '', '', NOT_MANDATORY_FIELD\nfld_DisableCtrl txtSkipReason",shape="box"];
+Node_13 [ label ="fld_DisableCtrl txtSkipReason",shape="box"];
+Node_14 [ label ="endif",shape="box"];
+Node_15 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboSkip_LostFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_6 [label="FALSE",fontcolor="RED"];
+Node_5 -> Node_6;
+Node_3 -> Node_7 [label="False",fontcolor="RED"];
+Node_6 -> Node_8;
+Node_7 -> Node_8;
+Node_2 -> Node_9 [label="False",fontcolor="RED"];
+Node_9 -> Node_10 [label="True",fontcolor="GREEN"];
+Node_8 -> Node_9;
+Node_10 -> Node_11 [label="True",fontcolor="GREEN"];
+Node_10 -> Node_12 [label="FALSE",fontcolor="RED"];
+Node_11 -> Node_12;
+Node_9 -> Node_13 [label="False",fontcolor="RED"];
+Node_12 -> Node_14;
+Node_13 -> Node_14;
+Node_14 -> Node_15;
+}

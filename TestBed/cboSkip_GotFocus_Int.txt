@@ -1,0 +1,7 @@
+Private Sub cboSkip_GotFocus()
+On Error GoTo ERR_SYSTEM
+fld_GotFocus0 Me, (cboSkip.Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_GotFocus")
+End Sub

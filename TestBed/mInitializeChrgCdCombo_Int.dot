@@ -1,0 +1,26 @@
+digraph G{
+Node_1 [ label ="Private Sub mInitializeChrgCdCombo()\nOn Error GoTo ERR_SYSTEM\nSet mobjChrgCdComboSQL = Nothing\nWith mobjChrgCdComboSQL\nSet .ComboObject = cboChrgCd\n.ComboID = glCOMBO_ID_GENERIC_BY_SQL",shape="box"];
+Node_2 [ label ="ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC  ?",shape="diamond"];
+Node_3 [ label =".SQL = 'select distinct t1.CHRG_CD, t1.CHRG_DESC, t2.BILLING_TYP, t2.BILLING_DESC ' _\n& ' from GTDMAST1..CHRG_CD t1, GTDMAST1..BILLING_TYP t2, GTDMAST1..CHRG_CD_BILL_TYP_LNK t3, GTDMAST1..CHRG_CD_PROD_LNK t4 ' _\n& ' where t1.STATUS = 'A' and t2.STATUS = 'A' and t3.STATUS = 'A'' _\n& ' and t1.PROC_UNIT = '' & Fix_Quot_Mark(ProcUnit, ''') & ''' _\n& ' and t1.PROC_UNIT = t2.PROC_UNIT and t2.PROC_UNIT = t3.PROC_UNIT' _\n& ' and t1.PRDC_IND = 'Y' ' _\n& ' and t1.CHRG_CD = t3.CHRG_CD and t2.BILLING_TYP = t3.BILLING_TYP' _\n& ' and t4.CHRG_CD = t3.CHRG_CD and t4.PROD_LVL_ID = '' & ProdCat & ''' _\n& ' and t4.PROC_UNIT = t1.PROC_UNIT and t4.PROD_LVL = 'C' and t4.STATUS = 'A'' _\n& ' order by t1.CHRG_CD'",shape="box"];
+Node_4 [ label =" Check ? :  ProdCat = 'CIF' Then\n.SQL = 'select distinct t1.CHRG_CD, t1.CHRG_DESC, t2.BILLING_TYP, t2.BILLING_DESC ' _\n& ' from GTDMAST1..CHRG_CD t1, GTDMAST1..BILLING_TYP t2, GTDMAST1..CHRG_CD_BILL_TYP_LNK t3 ' _\n& ' where t1.STATUS = 'A' and t2.STATUS = 'A' and t3.STATUS = 'A'' _\n& ' and t1.PROC_UNIT = '' & Fix_Quot_Mark(ProcUnit, ''') & ''' _\n& ' and t1.PROC_UNIT = t2.PROC_UNIT and t2.PROC_UNIT = t3.PROC_UNIT' _\n& ' and t1.PRDC_IND = 'Y' ' _\n& ' and t1.CHRG_CD = t3.CHRG_CD and t2.BILLING_TYP = t3.BILLING_TYP' _\n& ' order by t1.CHRG_CD'",shape="box"];
+Node_5 [ label ="endif",shape="box"];
+Node_6 [ label ="ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC  ?",shape="diamond"];
+Node_7 [ label =".AddLinkedTextBox lblChrgCd, 'CHRG_DESC'\n.AddLinkedTextBox txtChrgBillingTyp, 'BILLING_TYP'\n.AddLinkedTextBox lblChrgBillingDesc, 'BILLING_DESC'\n.AddLinkedTextBox txtBillingTyp, 'BILLING_TYP'\n.AddLinkedTextBox lblBillingDesc, 'BILLING_DESC'",shape="box"];
+Node_8 [ label ="endif\n.Initialize\n.Columns('CHRG_CD').Caption = 'Code'\n.Columns('CHRG_DESC').Caption = 'Charge Code Description'\n.Columns('CHRG_DESC').Width = 4000\n.Columns('BILLING_TYP').Caption = 'Billing Type'\n.Columns('BILLING_TYP').Width = 1000\n.Columns('BILLING_DESC').Width = 0\n.Populate",shape="box"];
+Node_9 [ label =".Validate(cboChrgCd.Text)  ?",shape="diamond"];
+Node_10 [ label ="Call .UpdateLinkedControls",shape="box"];
+Node_11 [ label ="endif\nEnd With\nfld_SetMandatory cboChrgCd, '', '', IS_MANDATORY_FIELD\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mInitializeChrgCdCombo')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="False",fontcolor="RED"];
+Node_3 -> Node_5;
+Node_4 -> Node_5;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_6 -> Node_8 [label="FALSE",fontcolor="RED"];
+Node_7 -> Node_8;
+Node_9 -> Node_10 [label="True",fontcolor="GREEN"];
+Node_8 -> Node_9;
+Node_9 -> Node_11 [label="FALSE",fontcolor="RED"];
+Node_10 -> Node_11;
+}

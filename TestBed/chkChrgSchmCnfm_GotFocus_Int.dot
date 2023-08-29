@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub chkChrgSchmCnfm_GotFocus()\nCall SetFocusColor(BACK_COLOR, pnlChrgSchmCnfm, Initial_Color)\nEnd Sub",shape="box"];
+}

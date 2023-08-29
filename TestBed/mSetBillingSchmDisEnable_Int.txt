@@ -1,0 +1,56 @@
+Private Sub mSetBillingSchmDisEnable()
+On Error GoTo ERR_SYSTEM
+Dim lsBillLvl As String
+Dim llRowCnt As Long
+If ProdCat = "CIF" Then
+llRowCnt = TransObj.Item("BILLING_SCHM_CIF").RowCount
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+llRowCnt = TransObj.Item(GT_RS_BILLING_SCHM).RowCount
+endif
+If llRowCnt > 0 Then
+If ProdCat = "CIF" Then
+lsBillLvl = TransObj.Item("BILLING_SCHM_CIF").GetAttr("BILLING_LVL")
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+lsBillLvl = TransObj.Item(GT_RS_BILLING_SCHM).GetAttr("BILLING_LVL")
+endif
+If lsBillLvl = LC_LEVEL_VALUE And Not Is_Enq Then
+fld_EnableCtrl cboBillStartDay
+fld_EnableCtrl cboBillEndDay
+fld_EnableCtrl optCollectMthd(0)
+fld_EnableCtrl optCollectMthd(1)
+If optCollectMthd(0).Value = True Then
+BillMethodCtrlSetup 0
+ElseIf optCollectMthd(1).Value = True Then
+BillMethodCtrlSetup 1
+Else ' none of them are selected, probably newly added entries
+BillMethodCtrlSetup -1
+endif
+ElseIf lsBillLvl = CIF_LEVEL_VALUE And Not Is_Enq Then
+If ProdCat = "CIF" Then
+fld_EnableCtrl cboBillStartDay
+fld_EnableCtrl cboBillEndDay
+fld_EnableCtrl optCollectMthd(0)
+fld_EnableCtrl optCollectMthd(1)
+If optCollectMthd(0).Value = True Then
+BillMethodCtrlSetup 0
+ElseIf optCollectMthd(1).Value = True Then
+BillMethodCtrlSetup 1
+Else ' none of them are selected, probably newly added entries
+BillMethodCtrlSetup -1
+endif
+Else
+mDisableBillSchmCtrl
+endif
+Else
+mDisableBillSchmCtrl
+endif
+Else
+mDisableBillSchmCtrl
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+mSetChrgDtlDisEnable
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetBillingSchmDisEnable")
+End Sub

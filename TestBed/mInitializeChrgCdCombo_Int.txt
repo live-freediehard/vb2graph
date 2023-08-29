@@ -1,0 +1,51 @@
+Private Sub mInitializeChrgCdCombo()
+On Error GoTo ERR_SYSTEM
+Set mobjChrgCdComboSQL = Nothing
+With mobjChrgCdComboSQL
+Set .ComboObject = cboChrgCd
+.ComboID = glCOMBO_ID_GENERIC_BY_SQL
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+.SQL = "select distinct t1.CHRG_CD, t1.CHRG_DESC, t2.BILLING_TYP, t2.BILLING_DESC " _
+& " from GTDMAST1..CHRG_CD t1, GTDMAST1..BILLING_TYP t2, GTDMAST1..CHRG_CD_BILL_TYP_LNK t3, GTDMAST1..CHRG_CD_PROD_LNK t4 " _
+& " where t1.STATUS = 'A' and t2.STATUS = 'A' and t3.STATUS = 'A'" _
+& " and t1.PROC_UNIT = '" & Fix_Quot_Mark(ProcUnit, "'") & "'" _
+& " and t1.PROC_UNIT = t2.PROC_UNIT and t2.PROC_UNIT = t3.PROC_UNIT" _
+& " and t1.PRDC_IND = 'Y' " _
+& " and t1.CHRG_CD = t3.CHRG_CD and t2.BILLING_TYP = t3.BILLING_TYP" _
+& " and t4.CHRG_CD = t3.CHRG_CD and t4.PROD_LVL_ID = '" & ProdCat & "'" _
+& " and t4.PROC_UNIT = t1.PROC_UNIT and t4.PROD_LVL = 'C' and t4.STATUS = 'A'" _
+& " order by t1.CHRG_CD"
+ElseIf ProdCat = "CIF" Then
+.SQL = "select distinct t1.CHRG_CD, t1.CHRG_DESC, t2.BILLING_TYP, t2.BILLING_DESC " _
+& " from GTDMAST1..CHRG_CD t1, GTDMAST1..BILLING_TYP t2, GTDMAST1..CHRG_CD_BILL_TYP_LNK t3 " _
+& " where t1.STATUS = 'A' and t2.STATUS = 'A' and t3.STATUS = 'A'" _
+& " and t1.PROC_UNIT = '" & Fix_Quot_Mark(ProcUnit, "'") & "'" _
+& " and t1.PROC_UNIT = t2.PROC_UNIT and t2.PROC_UNIT = t3.PROC_UNIT" _
+& " and t1.PRDC_IND = 'Y' " _
+& " and t1.CHRG_CD = t3.CHRG_CD and t2.BILLING_TYP = t3.BILLING_TYP" _
+& " order by t1.CHRG_CD"
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+.AddLinkedTextBox lblChrgCd, "CHRG_DESC"
+.AddLinkedTextBox txtChrgBillingTyp, "BILLING_TYP"
+.AddLinkedTextBox lblChrgBillingDesc, "BILLING_DESC"
+.AddLinkedTextBox txtBillingTyp, "BILLING_TYP"
+.AddLinkedTextBox lblBillingDesc, "BILLING_DESC"
+endif
+.Initialize
+.Columns("CHRG_CD").Caption = "Code"
+.Columns("CHRG_DESC").Caption = "Charge Code Description"
+.Columns("CHRG_DESC").Width = 4000
+.Columns("BILLING_TYP").Caption = "Billing Type"
+.Columns("BILLING_TYP").Width = 1000
+.Columns("BILLING_DESC").Width = 0
+.Populate
+If .Validate(cboChrgCd.Text) Then
+Call .UpdateLinkedControls
+endif
+End With
+fld_SetMandatory cboChrgCd, "", "", IS_MANDATORY_FIELD
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mInitializeChrgCdCombo")
+End Sub

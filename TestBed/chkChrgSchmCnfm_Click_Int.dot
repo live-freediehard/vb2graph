@@ -1,0 +1,12 @@
+digraph G{
+Node_1 [ label ="Private Sub chkChrgSchmCnfm_Click(Value As Integer)",shape="box"];
+Node_2 [ label ="chkChrgSchmCnfm.Value  ?",shape="diamond"];
+Node_3 [ label ="pnlChrgSchmCnfm.ForeColor = QBColor(G_RED)\npnlChrgSchmCnfm.Caption = 'Yes'\nbBillingChrgCfnmInd = True",shape="box"];
+Node_4 [ label ="pnlChrgSchmCnfm.ForeColor = QBColor(G_BLUE)\npnlChrgSchmCnfm.Caption = 'No'\nbBillingChrgCfnmInd = False",shape="box"];
+Node_5 [ label ="endif\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="False",fontcolor="RED"];
+Node_3 -> Node_5;
+Node_4 -> Node_5;
+}

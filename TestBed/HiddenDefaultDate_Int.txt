@@ -1,0 +1,18 @@
+Private Sub HiddenDefaultDate()
+On Error GoTo ERR_SYSTEM
+Dim cmpdate As Date         'hidden the default date
+cmpdate = MAX_DT
+If cboChrgEndDay <> "" Then
+If DateDiff("d", cboChrgEndDay, cmpdate) = 0 Then
+cboChrgEndDay = ""
+endif
+endif
+If cboBillEndDay <> "" Then
+If DateDiff("d", cboBillEndDay, cmpdate) = 0 Then
+cboBillEndDay = ""
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.HiddenDefaultDate")
+End Sub

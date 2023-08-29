@@ -1,0 +1,7 @@
+Private Sub Form_Unload(Cancel As Integer)
+On Error GoTo ERR_SYSTEM
+Call mReleaseControlServerControls
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_Unload", Cancel)
+End Sub

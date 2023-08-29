@@ -1,0 +1,3 @@
+Private Sub chkChrgSchmCnfm_GotFocus()
+Call SetFocusColor(BACK_COLOR, pnlChrgSchmCnfm, Initial_Color)
+End Sub

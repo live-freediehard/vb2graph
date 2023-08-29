@@ -1,0 +1,10 @@
+Private Sub cboSkip_CloseUp()
+On Error GoTo ERR_SYSTEM
+With mcsrvSkipAmortAccural
+.Validate
+.UpdateLinkedControls giCLEAR_IF_INVALID
+End With
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_CloseUp")
+End Sub

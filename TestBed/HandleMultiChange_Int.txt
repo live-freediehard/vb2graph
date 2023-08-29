@@ -1,0 +1,13 @@
+Private Sub HandleMultiChange()
+On Error GoTo ERR_SYSTEM
+lblBillingDesc.Caption = TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_DESC")
+lblChrgCd.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("CHRG_DESC")
+lblChrgBillingDesc.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("BILLING_DESC")
+If Not Is_Enq Then
+mSetBillingSchmDisEnable
+mSetChrgSchmDisEnable
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.HandleMultiChange")
+End Sub

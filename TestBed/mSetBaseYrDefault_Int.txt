@@ -1,0 +1,38 @@
+Private Sub mSetBaseYrDefault()
+On Error GoTo ERR_SYSTEM
+Dim DBResult As Object
+Dim retcode As Long
+Dim sValue As String
+Dim lsSql As String
+Dim strBaseYr As String
+Dim rsChrgSchm As OGTRecordSet
+If GetPUConfigValue(ProcUnit, "IS_ANNUAL_BASIS_DEPEND_CCY", sValue) Then
+If sValue = "Y" Then
+If ProdCat = "CIF" Then
+Set rsChrgSchm = TransObj.Item("BILL_CHRG_SCHM_CIF")
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+Set rsChrgSchm = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+endif
+lsSql = "select BASE_YR " _
+& " from GTDMAST1..CCY" _
+& " where CCY_CD = '" & rsChrgSchm.GetAttr("CHRG_CCY_CD") & "'" _
+& " and STATUS = 'A'"
+ConnectObj.SQL = lsSql
+retcode = ConnectObj.ExecSQL()
+Set DBResult = ConnectObj.GetResult()
+If DBResult.RowCount > 0 Then
+If Not IsNull(DBResult.Attr("BASE_YR")) Then
+strBaseYr = DBResult.Attr("BASE_YR")
+retcode = rsChrgSchm.SetAttr("BASE_YR", strBaseYr, False)
+endif
+endif
+endif
+endif
+Set DBResult = Nothing
+Call GetDispData
+Call HiddenDefaultDate
+Call SetChrgActCd(0)
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.mSetBaseYrDefault", pbNewRow)
+End Sub

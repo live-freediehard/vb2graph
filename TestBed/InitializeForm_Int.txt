@@ -1,0 +1,52 @@
+Public Sub InitializeForm()
+On Error GoTo ERR_SYSTEM
+Dim lsLiabId As String
+Dim CIF_commcolby As String
+Dim CIF_otherdtl As String
+If mbInitializeFormHasBeenCalled = False Then
+Call MyPreForm
+Call mInitializeControlServerControls
+Call mInitializeChrgCdCombo
+If ProdCat = "CIF" Then
+If TransObj.Item("TBL_HDR").GetAttr("TRAN_STATUS") = "" Then
+mForceGetBillChrgSchm
+endif
+GetCommColByInd lsLiabId, CIF_commcolby, CIF_otherdtl
+If (CIF_commcolby <> "") Then
+Else
+optCollectBy(0).Value = False
+optCollectBy(1).Value = False
+optCollectBy(2).Value = False
+endif
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+If TransObj.Item(GT_RS_TP_LIAB_PTY).RowCount = 1 Then
+lsLiabId = TransObj.Item(GT_RS_TP_LIAB_PTY).GetAttr("BKG_PTY_ID")
+Else
+lsLiabId = ""
+endif
+GetLatestCommColByInd lsLiabId, msCommColByInd, msOtherDtl
+If Txn_Info.TranStatus = GT_TRAN_STATUS_NEW Then
+mForceGetBillChrgSchm
+endif
+endif
+If Not Is_Enq Then
+chkChrgSchmCnfm.Value = False
+pnlChrgSchmCnfm.ForeColor = QBColor(G_BLUE)
+pnlChrgSchmCnfm.Caption = "No"
+bBillingChrgCfnmInd = False
+Else
+lblChrgSchmCnfm.Visible = False
+pnlChrgSchmCnfm.Visible = False
+endif
+If ((Not ProdType = "CIF") And ProdCat = "CIF") Then
+lblChrgSchmCnfm.Visible = False
+pnlChrgSchmCnfm.Visible = False
+endif
+Me.Enabled = True
+mbInitializeFormHasBeenCalled = True
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.InitializeForm")
+End Sub

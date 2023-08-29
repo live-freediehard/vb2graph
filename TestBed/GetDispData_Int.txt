@@ -1,0 +1,9 @@
+Private Sub GetDispData()
+On Error GoTo ERR_SYSTEM
+Dim loRecObj As OGTRecordSet
+frm_Load Me
+mSetSkipAmortAccuralDisEnable
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.GetDispData")
+End Sub

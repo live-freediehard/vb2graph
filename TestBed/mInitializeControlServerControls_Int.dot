@@ -1,0 +1,19 @@
+digraph G{
+Node_1 [ label ="Sub mInitializeControlServerControls()\nOn Error GoTo ERR_SYSTEM\nSet mcsrvBillEndDay = New CComboByCalendar\nWith mcsrvBillEndDay\nSet .ComboObject = cboBillEndDay\n.DateFormat = DateFormat\nEnd With\nSet mcsrvBillStartDay = New CComboByCalendar\nWith mcsrvBillStartDay\nSet .ComboObject = cboBillStartDay\n.DateFormat = DateFormat\nEnd With\nSet mcsrvChrgStartDay = New CComboByCalendar\nWith mcsrvChrgStartDay\nSet .ComboObject = cboChrgStartDay\n.DateFormat = DateFormat\nEnd With\nSet mcsrvChrgEndDay = New CComboByCalendar\nWith mcsrvChrgEndDay\nSet .ComboObject = cboChrgEndDay\n.DateFormat = DateFormat\nEnd With\nSet mcsrvCommStartDt = New CComboByCalendar\nWith mcsrvCommStartDt\nSet .ComboObject = cboCommStartDt\n.DateFormat = DateFormat\nEnd With\nSet mcsrvNextBillDt = New CComboByCalendar\nWith mcsrvNextBillDt\nSet .ComboObject = cboNextBillDt\n.DateFormat = DateFormat\nEnd With\nSet mcsrvLastBillDt = New CComboByCalendar\nWith mcsrvLastBillDt\nSet .ComboObject = cboLastBillDt\n.DateFormat = DateFormat\nEnd With\nSet mcsrvChrgAction = New CComboByArray\nWith mcsrvChrgAction\n.ComboID = glCOMBO_ID_GENERIC_BY_ARRAY\nSet .ComboObject = cboChrgAction",shape="box"];
+Node_2 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_3 [ label ="Dim DataArrayCIF(0 To 2, 0 To 1)\nDataArrayCIF(0, 0) = CHRG_ACT_TAKE\nDataArrayCIF(0, 1) = CHRG_ACT_CD_TAKE\nDataArrayCIF(1, 0) = CHRG_ACT_WAIVE\nDataArrayCIF(1, 1) = CHRG_ACT_CD_WAIVE\nDataArrayCIF(2, 0) = CHRG_ACT_REFER\nDataArrayCIF(2, 1) = CHRG_ACT_CD_REFER\n.DataArray = DataArrayCIF",shape="box"];
+Node_4 [ label ="Dim DataArrayLC(0 To 1, 0 To 1)\nDataArrayLC(0, 0) = CHRG_ACT_TAKE\nDataArrayLC(0, 1) = CHRG_ACT_CD_TAKE\nDataArrayLC(1, 0) = CHRG_ACT_WAIVE\nDataArrayLC(1, 1) = CHRG_ACT_CD_WAIVE\n.DataArray = DataArrayLC",shape="box"];
+Node_5 [ label ="endif\n.FieldNamesArray = Array('PRODUCT_LVL_DESC', 'PRODUCT_LVL')\nEnd With\nSet mcsrvSkipAmortAccural = New CComboByArray\nWith mcsrvSkipAmortAccural\n.ComboID = glCOMBO_ID_GENERIC_BY_ARRAY\nSet .ComboObject = cboSkip",shape="box"];
+Node_6 [ label ="ProdCat <> 'CIF'  ?",shape="diamond"];
+Node_7 [ label ="Dim DataArraySkip(0 To 2, 0 To 1)\nDataArraySkip(0, 0) = SKIP_CD_YES\nDataArraySkip(0, 1) = SKIP_YES\nDataArraySkip(1, 0) = SKIP_CD_NO\nDataArraySkip(1, 1) = SKIP_NO\nDataArraySkip(2, 0) = SKIP_CD_ONE_CYCLE\nDataArraySkip(2, 1) = SKIP_ONE_CYCLE\n.DataArray = DataArraySkip",shape="box"];
+Node_8 [ label ="endif\n.FieldNamesArray = Array('PRODUCT_LVL', 'PRODUCT_LVL_DESC')\nEnd With\nSet mcsrvChrgCcyCd = New CComboByLookup\nWith mcsrvChrgCcyCd\nSet .ComboObject = cboChrgCcyCd\n.ComboID = glCOMBO_ID_GENERIC_BY_LOOKUP\n.LookupID = 'Currency'\nEnd With\nSet mcsrvMinChrgCcyCd = New CComboByLookup\nWith mcsrvMinChrgCcyCd\nSet .ComboObject = cboMinAmtCcy\n.ComboID = glCOMBO_ID_GENERIC_BY_LOOKUP\n.LookupID = 'Currency'\nEnd With\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mInitializeControlServerControls')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="False",fontcolor="RED"];
+Node_3 -> Node_5;
+Node_4 -> Node_5;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_6 -> Node_8 [label="FALSE",fontcolor="RED"];
+Node_7 -> Node_8;
+}

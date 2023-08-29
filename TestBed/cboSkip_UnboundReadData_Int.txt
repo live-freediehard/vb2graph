@@ -1,0 +1,9 @@
+Private Sub cboSkip_UnboundReadData(ByVal RowBuf As SSDataWidgets_B.ssRowBuffer, StartLocation As Variant, ByVal ReadPriorRows As Boolean)
+On Error GoTo ERR_SYSTEM
+If Not mcsrvSkipAmortAccural Is Nothing Then
+mcsrvSkipAmortAccural.UnboundPopulate RowBuf, StartLocation, ReadPriorRows
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboSkip_UnboundReadData", RowBuf, StartLocation, ReadPriorRows)
+End Sub

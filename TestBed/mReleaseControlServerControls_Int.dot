@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub mReleaseControlServerControls()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="Not (mcsrvChrgCcyCd Is Nothing)  ?",shape="diamond"];
+Node_3 [ label ="Set mcsrvChrgCcyCd = Nothing",shape="box"];
+Node_4 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mReleaseControlServerControls')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}

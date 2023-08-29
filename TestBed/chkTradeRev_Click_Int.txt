@@ -1,0 +1,14 @@
+Private Sub chkTradeRev_Click(Value As Integer)
+On Error GoTo ERR_SYSTEM
+fld_SetAttr0 Me, (chkTradeRev.Tag), PreValue
+If Not bLostFocus% Then
+If chkTradeRev.Caption = "Yes" Then
+chkTradeRev.Caption = "No"
+Else
+chkTradeRev.Caption = "Yes"
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.chkTradeRev_Click", Value)
+End Sub

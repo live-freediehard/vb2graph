@@ -1,0 +1,11 @@
+Private Sub FilterBillRecSet()
+On Error GoTo ERR_SYSTEM
+If ProdCat = "CIF" Then
+TransObj.Item("BILLING_SCHM_CIF").SetFilterKeys ("BILLING_TYP")
+TransObj.Item("BILLING_SCHM_CIF").SetFilterValues TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_TYP")
+TransObj.Item("BILLING_SCHM_CIF").Filter True
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.FilterBillRecSet")
+End Sub

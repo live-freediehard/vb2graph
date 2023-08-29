@@ -1,0 +1,34 @@
+digraph G{
+Node_1 [ label ="Private Sub mSetBaseYrDefault()\nOn Error GoTo ERR_SYSTEM\nDim DBResult As Object\nDim retcode As Long\nDim sValue As String\nDim lsSql As String\nDim strBaseYr As String\nDim rsChrgSchm As OGTRecordSet",shape="box"];
+Node_2 [ label ="GetPUConfigValue(ProcUnit, 'IS_ANNUAL_BASIS_DEPEND_CCY', sValue)  ?",shape="diamond"];
+Node_3 [ label ="sValue = 'Y'  ?",shape="diamond"];
+Node_4 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_5 [ label ="Set rsChrgSchm = TransObj.Item('BILL_CHRG_SCHM_CIF')",shape="box"];
+Node_6 [ label =" Check ? :  ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then\nSet rsChrgSchm = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)",shape="box"];
+Node_7 [ label ="endif\nlsSql = 'select BASE_YR ' _\n& ' from GTDMAST1..CCY' _\n& ' where CCY_CD = '' & rsChrgSchm.GetAttr('CHRG_CCY_CD') & ''' _\n& ' and STATUS = 'A''\nConnectObj.SQL = lsSql\nretcode = ConnectObj.ExecSQL()\nSet DBResult = ConnectObj.GetResult()",shape="box"];
+Node_8 [ label ="DBResult.RowCount > 0  ?",shape="diamond"];
+Node_9 [ label ="Not IsNull(DBResult.Attr('BASE_YR'))  ?",shape="diamond"];
+Node_10 [ label ="strBaseYr = DBResult.Attr('BASE_YR')\nretcode = rsChrgSchm.SetAttr('BASE_YR', strBaseYr, False)",shape="box"];
+Node_11 [ label ="endif",shape="box"];
+Node_12 [ label ="endif",shape="box"];
+Node_13 [ label ="endif",shape="box"];
+Node_14 [ label ="endif\nSet DBResult = Nothing\nCall GetDispData\nCall HiddenDefaultDate\nCall SetChrgActCd(0)\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.mSetBaseYrDefault', pbNewRow)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_6 [label="False",fontcolor="RED"];
+Node_5 -> Node_7;
+Node_6 -> Node_7;
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_7 -> Node_8;
+Node_9 -> Node_10 [label="True",fontcolor="GREEN"];
+Node_9 -> Node_11 [label="FALSE",fontcolor="RED"];
+Node_10 -> Node_11;
+Node_8 -> Node_12 [label="FALSE",fontcolor="RED"];
+Node_11 -> Node_12;
+Node_3 -> Node_13 [label="FALSE",fontcolor="RED"];
+Node_12 -> Node_13;
+Node_2 -> Node_14 [label="FALSE",fontcolor="RED"];
+Node_13 -> Node_14;
+}

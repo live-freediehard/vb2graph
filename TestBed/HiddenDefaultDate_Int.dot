@@ -1,0 +1,27 @@
+digraph G{
+Node_1 [ label ="Private Sub HiddenDefaultDate()\nOn Error GoTo ERR_SYSTEM\nDim cmpdate As Date         'hidden the default date\ncmpdate = MAX_DT",shape="box"];
+Node_2 [ label ="cboChrgEndDay <> ''  ?",shape="diamond"];
+Node_3 [ label ="DateDiff('d', cboChrgEndDay, cmpdate) = 0  ?",shape="diamond"];
+Node_4 [ label ="cboChrgEndDay = ''",shape="box"];
+Node_5 [ label ="endif",shape="box"];
+Node_6 [ label ="endif",shape="box"];
+Node_7 [ label ="cboBillEndDay <> ''  ?",shape="diamond"];
+Node_8 [ label ="DateDiff('d', cboBillEndDay, cmpdate) = 0  ?",shape="diamond"];
+Node_9 [ label ="cboBillEndDay = ''",shape="box"];
+Node_10 [ label ="endif",shape="box"];
+Node_11 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.HiddenDefaultDate')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_5 [label="FALSE",fontcolor="RED"];
+Node_4 -> Node_5;
+Node_2 -> Node_6 [label="FALSE",fontcolor="RED"];
+Node_5 -> Node_6;
+Node_7 -> Node_8 [label="True",fontcolor="GREEN"];
+Node_6 -> Node_7;
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_8 -> Node_10 [label="FALSE",fontcolor="RED"];
+Node_9 -> Node_10;
+Node_7 -> Node_11 [label="FALSE",fontcolor="RED"];
+Node_10 -> Node_11;
+}
