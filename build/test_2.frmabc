@@ -1,0 +1,77 @@
+Dim Initial_Color As Long
+Dim PreValue As Variant
+Private mbInitializeFormHasBeenCalled As Boolean
+Private mobjChrgCdComboSQL As New CComboBySQL
+
+Dim mcsrvBillEndDay As CComboByCalendar
+Dim mcsrvBillStartDay As CComboByCalendar
+Dim mcsrvChrgStartDay As CComboByCalendar
+Dim mcsrvChrgEndDay As CComboByCalendar
+Dim mcsrvCommStartDt As CComboByCalendar
+Dim mcsrvNextBillDt As CComboByCalendar
+
+Private Sub View_Multi3_Click(Index As Integer)
+On Error GoTo ERR_SYSTEM
+    
+    Select Case Index
+        Case 0
+            Form_KeyDown3 FIRST_PAGE_KEY, FUNCTION_KEY
+        Case 1
+            Form_KeyDown3 PREV_PAGE_KEY, FUNCTION_KEY
+        Case 2
+            Form_KeyDown3 NEXT_PAGE_KEY, FUNCTION_KEY
+        Case 3
+            Form_KeyDown3 LAST_PAGE_KEY, FUNCTION_KEY
+        Case 4
+            Form_KeyDown3 INS_PAGE_KEY, FUNCTION_KEY
+        Case 5
+            Form_KeyDown3 DEL_PAGE_KEY, FUNCTION_KEY
+        Case 6
+            Form_KeyDown3 GRID_SHOW_KEY, FUNCTION_KEY
+    End Select
+    
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.View_Multi3_Click", Index)
+End Sub
+
+Private Sub Form_KeyDown1(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+    If Shift = FUNCTION_KEY Then
+        Select Case KeyCode
+            Case Else
+                frm_KeyDown0 Me, (multi_msg1.Tag), txt_multi1, KeyCode, frm_tg_Billing_Typ
+        End Select
+        
+        If ProdCat = "CIF" Then
+            'set filter for billing scheme recset
+            Call FilterBillRecSet
+            lblBillingDesc.Caption = TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_DESC")
+                    
+            frm_Load Me
+            
+            'disable enable control
+            If Not Is_Enq Then
+                mSetBillingSchmDisEnable
+                mSetChrgSchmDisEnable
+            End If
+        
+            If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+                'Call setAllCtrlState(Me, "Disable")
+                mDisableChrgSchmCtrl
+                mDisableBillSchmCtrl
+            End If
+            
+        End If
+        
+        'hidden default date (applicable for NLC, XLC and CIF)
+        Call HiddenDefaultDate
+        
+        'Change the charge action code to full name according to its value
+        Call SetChrgActCd(0)
+    
+    End If
+    Exit Sub
+ERR_SYSTEM:
+    Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown1", KeyCode, Shift)
+End Sub

@@ -1,0 +1,36 @@
+digraph G{
+Node_1 [ label ="Private Sub Form_KeyDown1(KeyCode As Integer, Shift As Integer)\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="Shift = FUNCTION_KEY  ?",shape="diamond"];
+Node_3 [ label ="Select Case KeyCode",shape="diamond"];
+Node_4 [ label ="frm_KeyDown0 Me, (multi_msg1.Tag), txt_multi1, KeyCode, frm_tg_Billing_Typ",shape="box"];
+Node_5 [ label ="End Select",shape="box"];
+Node_6 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_7 [ label ="Call FilterBillRecSet\nlblBillingDesc.Caption = TransObj.Item('BILLING_TYP_CIF').GetAttr('BILLING_DESC')\nfrm_Load Me",shape="box"];
+Node_8 [ label ="Not Is_Enq  ?",shape="diamond"];
+Node_9 [ label ="mSetBillingSchmDisEnable\nmSetChrgSchmDisEnable",shape="box"];
+Node_10 [ label ="endif",shape="box"];
+Node_11 [ label ="((ProdType = 'CIFI' Or ProdType = 'CIFASN') And TranType = 'UPD')  ?",shape="diamond"];
+Node_12 [ label ="mDisableChrgSchmCtrl\nmDisableBillSchmCtrl",shape="box"];
+Node_13 [ label ="endif",shape="box"];
+Node_14 [ label ="endif\nCall HiddenDefaultDate\nCall SetChrgActCd(0)",shape="box"];
+Node_15 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.Form_KeyDown1', KeyCode, Shift)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_5 [label="FALSE",fontcolor="RED"];
+Node_4 -> Node_5;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_8 -> Node_9 [label="True",fontcolor="GREEN"];
+Node_7 -> Node_8;
+Node_8 -> Node_10 [label="FALSE",fontcolor="RED"];
+Node_9 -> Node_10;
+Node_11 -> Node_12 [label="True",fontcolor="GREEN"];
+Node_10 -> Node_11;
+Node_11 -> Node_13 [label="FALSE",fontcolor="RED"];
+Node_12 -> Node_13;
+Node_6 -> Node_14 [label="FALSE",fontcolor="RED"];
+Node_13 -> Node_14;
+Node_2 -> Node_15 [label="FALSE",fontcolor="RED"];
+Node_14 -> Node_15;
+}

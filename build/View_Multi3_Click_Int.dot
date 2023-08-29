@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub View_Multi3_Click(Index As Integer)\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="Select Case Index",shape="diamond"];
+Node_3 [ label ="Case 0\nForm_KeyDown3 FIRST_PAGE_KEY, FUNCTION_KEY\nCase 1\nForm_KeyDown3 PREV_PAGE_KEY, FUNCTION_KEY\nCase 2\nForm_KeyDown3 NEXT_PAGE_KEY, FUNCTION_KEY\nCase 3\nForm_KeyDown3 LAST_PAGE_KEY, FUNCTION_KEY\nCase 4\nForm_KeyDown3 INS_PAGE_KEY, FUNCTION_KEY\nCase 5\nForm_KeyDown3 DEL_PAGE_KEY, FUNCTION_KEY\nCase 6\nForm_KeyDown3 GRID_SHOW_KEY, FUNCTION_KEY",shape="box"];
+Node_4 [ label ="End Select\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.View_Multi3_Click', Index)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}
