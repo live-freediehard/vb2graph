@@ -1,0 +1,27 @@
+Private Sub Form_KeyDown1(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+If Shift = FUNCTION_KEY Then
+Select Case KeyCode
+Case Else
+frm_KeyDown0 Me, (multi_msg1.Tag), txt_multi1, KeyCode, frm_tg_Billing_Typ
+End Select
+If ProdCat = "CIF" Then
+Call FilterBillRecSet
+lblBillingDesc.Caption = TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_DESC")
+frm_Load Me
+If Not Is_Enq Then
+mSetBillingSchmDisEnable
+mSetChrgSchmDisEnable
+endif
+If ((ProdType = "CIFI" Or ProdType = "CIFASN") And TranType = "UPD") Then
+mDisableChrgSchmCtrl
+mDisableBillSchmCtrl
+endif
+endif
+Call HiddenDefaultDate
+Call SetChrgActCd(0)
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.Form_KeyDown1", KeyCode, Shift)
+End Sub

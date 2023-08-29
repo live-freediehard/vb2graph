@@ -1,0 +1,22 @@
+Debug.Print "SetChrgActCd"
+On Error GoTo ERR_SYSTEM
+If Mode = 0 Then
+If cboChrgAction.Text = CHRG_ACT_CD_TAKE Then
+cboChrgAction.Text = CHRG_ACT_TAKE
+ElseIf cboChrgAction.Text = CHRG_ACT_CD_WAIVE Then
+cboChrgAction.Text = CHRG_ACT_WAIVE
+ElseIf cboChrgAction.Text = CHRG_ACT_CD_REFER Then
+cboChrgAction.Text = CHRG_ACT_REFER
+End If
+ElseIf Mode = 1 Then
+If cboChrgAction.Text = CHRG_ACT_TAKE Then
+cboChrgAction.Text = CHRG_ACT_CD_TAKE
+ElseIf cboChrgAction.Text = CHRG_ACT_WAIVE Then
+cboChrgAction.Text = CHRG_ACT_CD_WAIVE
+ElseIf cboChrgAction.Text = CHRG_ACT_REFER Then
+cboChrgAction.Text = CHRG_ACT_CD_REFER
+End If
+End If
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.SetChrgActCd")

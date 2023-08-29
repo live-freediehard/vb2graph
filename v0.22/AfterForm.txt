@@ -1,0 +1,101 @@
+Public Sub AfterInitializeForm()
+On Error GoTo ERR_SYSTEM
+If Is_Enq Then
+View_Multi1(4).Enabled = False
+View_Multi1(5).Enabled = False
+View_Multi2(4).Enabled = False
+View_Multi2(5).Enabled = False
+View_Multi3(4).Enabled = False
+View_Multi3(5).Enabled = False
+View_Multi4(4).Enabled = False
+View_Multi4(5).Enabled = False
+Else
+If ProdCat = "CIF" Then
+View_Multi1(4).Enabled = False
+View_Multi1(5).Enabled = False
+View_Multi3(4).Enabled = False
+View_Multi3(5).Enabled = False
+cboChrgCd.Enabled = False
+endif
+txtBillingTyp.Enabled = False
+txtBillingLvl.Enabled = False
+txtChrgBillingTyp.Enabled = False
+txtChrgLvl.Enabled = False
+endif
+If ProdCat = "CIF" Then
+lblBillingDesc.Caption = TransObj.Item("BILLING_TYP_CIF").GetAttr("BILLING_DESC")
+lblChrgCd.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("CHRG_DESC")
+lblChrgBillingDesc.Caption = TransObj.Item("BILL_CHRG_CD_CIF").GetAttr("BILLING_DESC")
+Call FilterBillRecSet
+Call FilterChrgRecSet
+endif
+GetDispData
+If ProdCat = "CIF" Then
+If Not Is_Enq Then
+mSetBillingSchmDisEnable
+mSetChrgSchmDisEnable
+endif
+endif
+Call SetControlLookAndFeel
+Call SetChrgActCd(0)
+Dim sValue As String
+If GetPUConfigValue(ProcUnit, "DISABLE_ANNUAL_BASIS", sValue) Then
+If sValue = "Y" Then
+fld_DisableCtrl optChrgSchmCal(0)
+fld_DisableCtrl optChrgSchmCal(1)
+fld_DisableCtrl optChrgSchmCal(2)
+endif
+endif
+If GetPUConfigValue(ProcUnit, "IS_ALLOW_BILL_MULTI_CCY", sValue) Then
+If sValue = "Y" Then
+If ProdCat = "CIF" Then
+fld_SetMandatory cboMinAmtCcy, "", "", IS_MANDATORY_FIELD
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+fld_SetMandatory cboMinAmtCcy, "", "", IS_MANDATORY_FIELD
+endif
+endif
+endif
+Dim loRecSet As OGTRecordSet
+Set loRecSet = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+If Not loRecSet Is Nothing Then
+If GetPUConfigValue(ProcUnit, "BILL_CHRG_SCHM_DEF_TRAN_CCY", sValue) Then
+If sValue = "Y" Then
+If loRecSet.RowCount <= 0 Then
+Exit Sub
+endif
+nCurrRow = loRecSet.CurrentRow
+If Not loRecSet Is Nothing Then
+With loRecSet
+If .RowCount > 0 Then
+.MoveFirst
+Do While Not .IsEOF
+If .GetAttr("CHRG_LVL") = LC_LEVEL_VALUE Then
+llRet = .SetAttr("MIN_CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+llRet = .SetAttr("CHRG_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+llRet = .SetAttr("TIER_LMT_CCY_CD", TransObj.Item("LC_CCY").GetAttr("CCY_CD"), False)
+cboMinAmtCcy = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+cboChrgCcyCd = TransObj.Item("LC_CCY").GetAttr("CCY_CD")
+Call mSetBaseYrDefault
+endif
+.MoveNext
+Loop
+endif
+End With
+endif
+loRecSet.CurrentRow = nCurrRow
+endif
+endif
+endif
+Call GetDispData
+Call HiddenDefaultDate
+Call SetChrgActCd(0)
+If ProdType = "CIFASN" And TranType = "UPD" Then
+Call setAllCtrlState(Me, "Disable")
+endif
+If (ProdType = "CIFI" And TranType = "UPD") Then
+Call setAllCtrlState(Me, "Disable")
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.AfterInitializeForm")
+End Sub

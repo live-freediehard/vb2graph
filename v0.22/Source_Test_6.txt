@@ -1,0 +1,22 @@
+If a<b Then
+a=10
+b=20
+If c<a Then
+a=33
+b=44
+If tango<3 Then
+tango=667
+endif
+else
+pla=99
+gla=1
+If aplha<tango Then
+alpha=20
+else
+beta=99
+endif
+endif
+else
+a=20
+b=10
+endif

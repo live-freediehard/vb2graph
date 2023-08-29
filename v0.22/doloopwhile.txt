@@ -1,0 +1,5 @@
+i=1
+Do
+Cells(i,1)=i
+i=i+1
+Loop While i<11

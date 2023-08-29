@@ -1,0 +1,17 @@
+digraph G{
+Node_1 [ label ="for i=1 to 10",shape="Mdiamond"];
+Node_2 [ label ="if a<b then",shape="diamond"];
+Node_3 [ label ="a=10",shape="box"];
+Node_4 [ label ="b=20",shape="box"];
+Node_5 [ label ="endif",shape="box"];
+Node_6 [ label ="next",shape="box"];
+Node_1 -> Node_2 [label="True",fontcolor="GREEN"];
+Node_0 -> Node_1;
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_2 -> Node_4 [label="False",fontcolor="RED"];
+Node_3 -> Node_5;
+Node_4 -> Node_5;
+Node_6 -> Node_1 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+Node_5 -> Node_6;
+}

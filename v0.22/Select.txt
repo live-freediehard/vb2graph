@@ -1,0 +1,12 @@
+Select Case Grade
+Case Is >= 90
+LetterGrade = "A"
+Case Is >= 80
+LetterGrade = "B"
+Case Is >= 70
+LetterGrade = "C"
+Case Is >= 60
+LetterGrade = "D"
+Case Else
+LetterGrade = "Sorry"
+End Select
