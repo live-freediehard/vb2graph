@@ -1,0 +1,8 @@
+Private Sub cboNextBillDt_DropDown()
+On Error GoTo ERR_SYSTEM
+PreValue = cboNextBillDt.Text
+SendKeys "{enter}"
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_DropDown")
+End Sub

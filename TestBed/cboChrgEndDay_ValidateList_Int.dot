@@ -1,0 +1,22 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgEndDay_ValidateList(Text As String, RtnPassed As Integer)\nOn Error GoTo ERR_SYSTEM\nDim StartDys As Date\nDim EndDys As Date\nDim ErrCode As Long",shape="box"];
+Node_2 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_3 [ label ="StartDys = TransObj.Item('BILL_CHRG_SCHM_CIF').GetAttr('EFF_FROM_DT')\nEndDys = TransObj.Item('BILL_CHRG_SCHM_CIF').GetAttr('EFF_TO_DT')",shape="box"];
+Node_4 [ label ="cboChrgStartDay.Text <> '' And cboChrgEndDay.Text <> ''  ?",shape="diamond"];
+Node_5 [ label ="DateDiff('d', StartDys, EndDys) < 0  ?",shape="diamond"];
+Node_6 [ label ="ErrCode = 80032\nRtnPassed = mcsrvChrgEndDay.Validate(Text, StartDys, EndDys, True, ErrCode)",shape="box"];
+Node_7 [ label ="endif",shape="box"];
+Node_8 [ label ="endif",shape="box"];
+Node_9 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgEndDay_ValidateList', Text, RtnPassed)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_4 -> Node_5 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_4;
+Node_5 -> Node_6 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+Node_4 -> Node_8 [label="FALSE",fontcolor="RED"];
+Node_7 -> Node_8;
+Node_2 -> Node_9 [label="FALSE",fontcolor="RED"];
+Node_8 -> Node_9;
+}

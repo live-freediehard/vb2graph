@@ -1,0 +1,29 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgStartDay_LostFocus()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="mcsrvChrgStartDay.ShowCalendarInProgress = False  ?",shape="diamond"];
+Node_3 [ label ="cboChrgStartDay.Text = ''  ?",shape="diamond"];
+Node_4 [ label ="cboChrgStartDay.Text = EMPTY_DT",shape="box"];
+Node_5 [ label ="endif\nfld_LostFocus0 Me, (cboChrgStartDay.Tag), PreValue, Initial_Color",shape="box"];
+Node_6 [ label ="ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC  ?",shape="diamond"];
+Node_7 [ label ="mValidateChrgSchm",shape="box"];
+Node_8 [ label ="endif",shape="box"];
+Node_9 [ label ="ProdCat = 'CIF'  ?",shape="diamond"];
+Node_10 [ label ="mValidateChrgSchm",shape="box"];
+Node_11 [ label ="endif",shape="box"];
+Node_12 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgStartDay_LostFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_3 -> Node_5 [label="FALSE",fontcolor="RED"];
+Node_4 -> Node_5;
+Node_6 -> Node_7 [label="True",fontcolor="GREEN"];
+Node_5 -> Node_6;
+Node_6 -> Node_8 [label="FALSE",fontcolor="RED"];
+Node_7 -> Node_8;
+Node_9 -> Node_10 [label="True",fontcolor="GREEN"];
+Node_8 -> Node_9;
+Node_9 -> Node_11 [label="FALSE",fontcolor="RED"];
+Node_10 -> Node_11;
+Node_2 -> Node_12 [label="FALSE",fontcolor="RED"];
+Node_11 -> Node_12;
+}

@@ -1,0 +1,12 @@
+digraph G{
+Node_1 [ label ="Private Sub cboNextBillDt_GotFocus()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="mcsrvNextBillDt.ShowCalendarInProgress = False  ?",shape="diamond"];
+Node_3 [ label ="fld_GotFocus0 Me, (cboNextBillDt.Tag), PreValue, Initial_Color",shape="box"];
+Node_4 [ label ="mcsrvNextBillDt.CompleteShowCalendar",shape="box"];
+Node_5 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboNextBillDt_GotFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="False",fontcolor="RED"];
+Node_3 -> Node_5;
+Node_4 -> Node_5;
+}

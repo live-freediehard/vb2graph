@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub cboChrgStartDay_CloseUp()\nOn Error GoTo ERR_SYSTEM\nmcsrvChrgStartDay.ShowCalendar\ngHandle_Got_Focus cboChrgStartDay\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboChrgStartDay_CloseUp')\nEnd Sub",shape="box"];
+}

@@ -1,0 +1,11 @@
+Private Sub cboChrgStartDay_GotFocus()
+On Error GoTo ERR_SYSTEM
+If mcsrvChrgStartDay.ShowCalendarInProgress = False Then
+fld_GotFocus0 Me, (cboChrgStartDay.Tag), PreValue, Initial_Color
+Else
+mcsrvChrgStartDay.CompleteShowCalendar
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_GotFocus")
+End Sub

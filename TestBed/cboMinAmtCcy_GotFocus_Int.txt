@@ -1,0 +1,7 @@
+Private Sub cboMinAmtCcy_GotFocus()
+On Error GoTo ERR_SYSTEM
+fld_GotFocus0 Me, (cboMinAmtCcy.Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgCcyCd_GotFocus")
+End Sub

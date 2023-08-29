@@ -1,0 +1,18 @@
+Private Sub cboMinAmtCcy_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+ReDim validList(0) As Control
+ReDim valuelist(0) As Value_Type
+With mcsrvMinChrgCcyCd
+If .Initialized = False Then
+.Initialize
+.Populate
+endif
+End With
+Set validList(0) = cboMinAmtCcy
+RtnPassed = Validate_On_List(Me, "Currency", "CCY_CD", Text, validList(), valuelist(), CLR_IF_NOT_FOUND)
+Erase validList
+Erase valuelist
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboMinAmtCcy_ValidateList", Text, RtnPassed)
+End Sub

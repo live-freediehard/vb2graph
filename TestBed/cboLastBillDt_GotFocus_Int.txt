@@ -1,0 +1,11 @@
+Private Sub cboLastBillDt_GotFocus()
+On Error GoTo ERR_SYSTEM
+If mcsrvLastBillDt.ShowCalendarInProgress = False Then
+fld_GotFocus0 Me, (cboLastBillDt.Tag), PreValue, Initial_Color
+Else
+mcsrvLastBillDt.CompleteShowCalendar
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboLastBillDt_GotFocus")
+End Sub

@@ -1,0 +1,8 @@
+Private Sub cboChrgStartDay_DropDown()
+On Error GoTo ERR_SYSTEM
+PreValue = cboChrgStartDay.Text
+SendKeys "{enter}"
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_DropDown")
+End Sub

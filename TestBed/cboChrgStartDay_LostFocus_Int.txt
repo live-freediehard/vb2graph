@@ -1,0 +1,18 @@
+Private Sub cboChrgStartDay_LostFocus()
+On Error GoTo ERR_SYSTEM
+If mcsrvChrgStartDay.ShowCalendarInProgress = False Then
+If cboChrgStartDay.Text = "" Then
+cboChrgStartDay.Text = EMPTY_DT
+endif
+fld_LostFocus0 Me, (cboChrgStartDay.Tag), PreValue, Initial_Color
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+mValidateChrgSchm
+endif
+If ProdCat = "CIF" Then
+mValidateChrgSchm
+endif
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_LostFocus")
+End Sub

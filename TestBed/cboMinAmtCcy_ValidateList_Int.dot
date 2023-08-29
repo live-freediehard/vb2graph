@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub cboMinAmtCcy_ValidateList(Text As String, RtnPassed As Integer)\nOn Error GoTo ERR_SYSTEM\nReDim validList(0) As Control\nReDim valuelist(0) As Value_Type\nWith mcsrvMinChrgCcyCd",shape="box"];
+Node_2 [ label =".Initialized = False  ?",shape="diamond"];
+Node_3 [ label =".Initialize\n.Populate",shape="box"];
+Node_4 [ label ="endif\nEnd With\nSet validList(0) = cboMinAmtCcy\nRtnPassed = Validate_On_List(Me, 'Currency', 'CCY_CD', Text, validList(), valuelist(), CLR_IF_NOT_FOUND)\nErase validList\nErase valuelist\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboMinAmtCcy_ValidateList', Text, RtnPassed)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}

@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub cboLastBillDt_LostFocus()\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="mcsrvLastBillDt.ShowCalendarInProgress = False  ?",shape="diamond"];
+Node_3 [ label ="fld_LostFocus0 Me, (cboLastBillDt.Tag), PreValue, Initial_Color",shape="box"];
+Node_4 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboLastBillDt_LostFocus')\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}

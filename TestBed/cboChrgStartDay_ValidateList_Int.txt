@@ -1,0 +1,35 @@
+Private Sub cboChrgStartDay_ValidateList(Text As String, RtnPassed As Integer)
+On Error GoTo ERR_SYSTEM
+Dim StartDys As Date
+Dim EndDys As Date
+Dim CurrentDt As Date
+Dim ErrCode As Long
+Dim current As Long
+Dim i As Integer
+If ProdCat = "CIF" Then
+StartDys = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_FROM_DT")
+EndDys = TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_TO_DT")
+If cboChrgStartDay.Text <> "" Then
+current = TransObj.Item("BILL_CHRG_SCHM_CIF").CurrentRow
+CurrentDt = cboChrgStartDay.Text
+For i = 0 To TransObj.Item("BILL_CHRG_SCHM_CIF").RowCount - 1
+TransObj.Item("BILL_CHRG_SCHM_CIF").CurrentRow = i
+If DateDiff("d", CurrentDt, TransObj.Item("BILL_CHRG_SCHM_CIF").GetAttr("EFF_FROM_DT")) = 0 And i <> current Then
+ErrCode = 20007
+RtnPassed = 0
+GlobalErrorMessage = 20007
+endif
+Next
+endif
+If cboChrgStartDay.Text <> "" And cboChrgEndDay.Text <> "" And ErrCode <> 20007 Then
+If DateDiff("d", StartDys, EndDys) < 0 Then
+ErrCode = 80032
+RtnPassed = mcsrvChrgStartDay.Validate(Text, StartDys, EndDys, True, ErrCode)
+endif
+endif
+ElseIf ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_ValidateList", Text, RtnPassed)
+End Sub

@@ -1,0 +1,8 @@
+Private Sub cboLastBillDt_DropDown()
+On Error GoTo ERR_SYSTEM
+PreValue = cboLastBillDt.Text
+SendKeys "{enter}"
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboLastBillDt_DropDown")
+End Sub

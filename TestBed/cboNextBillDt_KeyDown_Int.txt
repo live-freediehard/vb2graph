@@ -1,0 +1,9 @@
+Private Sub cboNextBillDt_KeyDown(KeyCode As Integer, Shift As Integer)
+On Error GoTo ERR_SYSTEM
+If KeyCode = Look_Up_Key Then
+cboNextBillDt_DropDown
+endif
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_KeyDown", KeyCode, Shift)
+End Sub

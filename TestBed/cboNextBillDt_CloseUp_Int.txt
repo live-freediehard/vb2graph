@@ -1,0 +1,8 @@
+Private Sub cboNextBillDt_CloseUp()
+On Error GoTo ERR_SYSTEM
+mcsrvNextBillDt.ShowCalendar
+gHandle_Got_Focus cboNextBillDt
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboNextBillDt_CloseUp")
+End Sub

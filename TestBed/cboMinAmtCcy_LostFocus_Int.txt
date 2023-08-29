@@ -1,0 +1,8 @@
+Private Sub cboMinAmtCcy_LostFocus()
+On Error GoTo ERR_SYSTEM
+Dim sValue As String
+fld_LostFocus0 Me, (cboMinAmtCcy.Tag), PreValue, Initial_Color
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboMinAmtCcy_LostFocus")
+End Sub

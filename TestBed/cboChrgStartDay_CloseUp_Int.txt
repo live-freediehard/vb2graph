@@ -1,0 +1,8 @@
+Private Sub cboChrgStartDay_CloseUp()
+On Error GoTo ERR_SYSTEM
+mcsrvChrgStartDay.ShowCalendar
+gHandle_Got_Focus cboChrgStartDay
+Exit Sub
+ERR_SYSTEM:
+Call DEFAULT_ERROR_HANDLE_PROCEDURE("frmBillingSch.cboChrgStartDay_CloseUp")
+End Sub

@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="Private Sub cboLastBillDt_KeyDown(KeyCode As Integer, Shift As Integer)\nOn Error GoTo ERR_SYSTEM",shape="box"];
+Node_2 [ label ="KeyCode = Look_Up_Key  ?",shape="diamond"];
+Node_3 [ label ="cboLastBillDt_DropDown",shape="box"];
+Node_4 [ label ="endif\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboLastBillDt_KeyDown', KeyCode, Shift)\nEnd Sub",shape="box"];
+Node_2 -> Node_3 [label="True",fontcolor="GREEN"];
+Node_1 -> Node_2;
+Node_2 -> Node_4 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+}

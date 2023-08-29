@@ -1,0 +1,3 @@
+digraph G{
+Node_1 [ label ="Private Sub cboLastBillDt_DropDown()\nOn Error GoTo ERR_SYSTEM\nPreValue = cboLastBillDt.Text\nSendKeys '{enter}'\nExit Sub\nERR_SYSTEM:\nCall DEFAULT_ERROR_HANDLE_PROCEDURE('frmBillingSch.cboLastBillDt_DropDown')\nEnd Sub",shape="box"];
+}
