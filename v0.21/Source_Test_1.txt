@@ -1,0 +1,7 @@
+If a<b Then
+a=10
+b=20
+else
+a=20
+b=10
+endif

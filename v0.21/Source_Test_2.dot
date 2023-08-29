@@ -1,0 +1,9 @@
+digraph G{
+Node_1 [ label ="a<b  ?",shape="diamond"];
+Node_2 [ label ="a=10\nb=20",shape="box"];
+Node_3 [ label ="endif",shape="box"];
+Node_1 -> Node_2 [label="True",fontcolor="GREEN"];
+Node_0 -> Node_1;
+Node_1 -> Node_3 [label="FALSE",fontcolor="RED"];
+Node_2 -> Node_3;
+}

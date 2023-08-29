@@ -1,0 +1,18 @@
+digraph G{
+Node_1 [ label ="Select Case Grade",shape="diamond"];
+Node_2 [ label ="Case Is >= 90\nLetterGrade = 'A'\nCase Is >= 80\nLetterGrade = 'B'\nCase Is >= 70\nLetterGrade = 'C'\nCase Is >= 60",shape="box"];
+Node_3 [ label ="a<v  ?",shape="diamond"];
+Node_4 [ label ="LetterGrade = 'D'",shape="box"];
+Node_5 [ label ="endif",shape="box"];
+Node_6 [ label ="LetterGrade = 'Sorry'",shape="box"];
+Node_7 [ label ="End Select",shape="box"];
+Node_1 -> Node_2 [label="True",fontcolor="GREEN"];
+Node_0 -> Node_1;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_2 -> Node_3;
+Node_3 -> Node_5 [label="FALSE",fontcolor="RED"];
+Node_4 -> Node_5;
+Node_1 -> Node_6 [label="False",fontcolor="RED"];
+Node_5 -> Node_7;
+Node_6 -> Node_7;
+}

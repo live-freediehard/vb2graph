@@ -1,0 +1,10 @@
+digraph G{
+Node_1 [ label ="for i=1 to 10",shape="Mdiamond"];
+Node_2 [ label ="a=10\nb=20",shape="box"];
+Node_3 [ label ="next",shape="box"];
+Node_1 -> Node_2 [label="True",fontcolor="GREEN"];
+Node_0 -> Node_1;
+Node_3 -> Node_1 [label="FALSE",fontcolor="RED"];
+Node_3 -> Node_4;
+Node_2 -> Node_3;
+}

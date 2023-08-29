@@ -1,0 +1,67 @@
+If ProdCat = "CIF" Then
+Set rsBillSchm = TransObj.Item("BILLING_SCHM_CIF")
+Set rsBillTyp = TransObj.Item("BILLING_TYP_CIF")
+Set rsChrgSchm = TransObj.Item("BILL_CHRG_SCHM_CIF")
+Set rsChrgCd = TransObj.Item("BILL_CHRG_CD_CIF")
+Set rsCustLcl = TransObj.Item("CUST_LCL")
+If Not rsBillSchm Is Nothing And Not rsCustLcl Is Nothing Then
+If rsBillSchm.RowCount = 0 Then
+rsBillSchm.AddRow 0
+endif
+rsBillSchm.SetAttr "PROC_UNIT", ProcUnit, True
+rsBillSchm.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+rsBillSchm.GetData 1
+rsBillSchm.MoveFirst
+endif
+If Not rsBillTyp Is Nothing And Not rsCustLcl Is Nothing Then
+If rsBillTyp.RowCount = 0 Then
+rsBillTyp.AddRow 0
+endif
+rsBillTyp.SetAttr "PROC_UNIT", ProcUnit, True
+rsBillTyp.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+rsBillTyp.GetData 1
+rsBillTyp.MoveFirst
+endif
+If Not rsChrgSchm Is Nothing And Not rsCustLcl Is Nothing Then
+If rsChrgSchm.RowCount = 0 Then
+rsChrgSchm.AddRow 0
+endif
+rsChrgSchm.SetAttr "PROC_UNIT", ProcUnit, True
+rsChrgSchm.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+rsChrgSchm.GetData 1
+rsChrgSchm.MoveFirst
+endif
+If Not rsChrgCd Is Nothing And Not rsCustLcl Is Nothing Then
+If rsChrgCd.RowCount = 0 Then
+rsChrgCd.AddRow 0
+endif
+rsChrgCd.SetAttr "PROC_UNIT", ProcUnit, True
+rsChrgCd.SetAttr "CUST_ID", rsCustLcl.GetAttr("CUST_ID"), True
+rsChrgCd.GetData 1
+rsChrgCd.MoveFirst
+endif
+endif
+If ProdCat = GT_PRD_NLC Or ProdCat = GT_PRD_XLC Then
+Set rsBillSchm = TransObj.Item(GT_RS_BILLING_SCHM)
+If Not rsBillSchm Is Nothing Then
+If rsBillSchm.RowCount = 0 Then
+rsBillSchm.AddRow 0
+endif
+rsBillSchm.SetAttr "PROC_UNIT", ProcUnit, True
+rsBillSchm.SetAttr "TRAN_REF_NBR", Txn_Info.TranRefNbr, True
+rsBillSchm.SetAttr "TRAN_SEQ_NBR", Txn_Info.TranSeqNbr, True
+rsBillSchm.GetData 1
+rsBillSchm.MoveFirst
+endif
+Set rsChrgSchm = TransObj.Item(GT_RS_BILL_CHRG_SCHM_LC)
+If Not rsChrgSchm Is Nothing Then
+If rsChrgSchm.RowCount = 0 Then
+rsChrgSchm.AddRow 0
+endif
+rsChrgSchm.SetAttr "PROC_UNIT", ProcUnit, True
+rsChrgSchm.SetAttr "TRAN_REF_NBR", Txn_Info.TranRefNbr, True
+rsChrgSchm.SetAttr "TRAN_SEQ_NBR", Txn_Info.TranSeqNbr, True
+rsChrgSchm.GetData 1
+rsChrgSchm.MoveFirst
+endif
+endif

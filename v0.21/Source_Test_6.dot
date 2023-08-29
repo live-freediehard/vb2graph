@@ -1,0 +1,36 @@
+digraph G{
+Node_1 [ label ="a<b  ?",shape="diamond"];
+Node_2 [ label ="a=10\nb=20",shape="box"];
+Node_3 [ label ="c<a  ?",shape="diamond"];
+Node_4 [ label ="a=33\nb=44",shape="box"];
+Node_5 [ label ="tango<3  ?",shape="diamond"];
+Node_6 [ label ="tango=667",shape="box"];
+Node_7 [ label ="endif",shape="box"];
+Node_8 [ label ="pla=99\ngla=1",shape="box"];
+Node_9 [ label ="aplha<tango  ?",shape="diamond"];
+Node_10 [ label ="alpha=20",shape="box"];
+Node_11 [ label ="beta=99",shape="box"];
+Node_12 [ label ="endif",shape="box"];
+Node_13 [ label ="endif",shape="box"];
+Node_14 [ label ="a=20\nb=10",shape="box"];
+Node_15 [ label ="endif",shape="box"];
+Node_1 -> Node_2 [label="True",fontcolor="GREEN"];
+Node_0 -> Node_1;
+Node_3 -> Node_4 [label="True",fontcolor="GREEN"];
+Node_2 -> Node_3;
+Node_5 -> Node_6 [label="True",fontcolor="GREEN"];
+Node_4 -> Node_5;
+Node_5 -> Node_7 [label="FALSE",fontcolor="RED"];
+Node_6 -> Node_7;
+Node_3 -> Node_8 [label="False",fontcolor="RED"];
+Node_9 -> Node_10 [label="True",fontcolor="GREEN"];
+Node_8 -> Node_9;
+Node_9 -> Node_11 [label="False",fontcolor="RED"];
+Node_10 -> Node_12;
+Node_11 -> Node_12;
+Node_7 -> Node_13;
+Node_12 -> Node_13;
+Node_1 -> Node_14 [label="False",fontcolor="RED"];
+Node_13 -> Node_15;
+Node_14 -> Node_15;
+}
